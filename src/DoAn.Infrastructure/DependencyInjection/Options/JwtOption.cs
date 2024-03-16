@@ -1,4 +1,4 @@
-namespace DoAn.API.DependencyInjection.Options;
+namespace DoAn.Infrastructure.DependencyInjection.Options;
 
 public class JwtOption
 {

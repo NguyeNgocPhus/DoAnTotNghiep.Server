@@ -19,7 +19,7 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        throw new TestException("Not Found", "okeokeo");
+        // throw new TestException("Not Found", "okeokeo");
         var claims = new List<Claim>
         {
             new(ClaimTypes.Email, request.Email),

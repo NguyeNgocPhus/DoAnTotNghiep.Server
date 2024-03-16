@@ -4,8 +4,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using DoAn.API.DependencyInjection.Options;
 using DoAn.Application.Abstractions;
+using DoAn.Infrastructure.DependencyInjection.Options;
 
 
 namespace DoAn.Infrastructure.Authentication;
