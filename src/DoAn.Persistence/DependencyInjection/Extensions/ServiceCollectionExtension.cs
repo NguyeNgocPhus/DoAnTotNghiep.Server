@@ -1,4 +1,9 @@
+using DoAn.Application.Abstractions;
+using DoAn.Application.Abstractions.Repositories;
+using DoAn.Domain.Entities.Identity;
 using DoAn.Persistence.DependencyInjection.Options;
+using DoAn.Persistence.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +60,46 @@ public static class ServiceCollectionExtension
 
 
         });
+        
+        services.AddIdentityCore<AppUser>(opt =>
+            {
+                opt.Lockout.AllowedForNewUsers = true; // Default true
+                opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2); // Default 5
+                opt.Lockout.MaxFailedAccessAttempts = 3; // Default 5
+            })
+            .AddRoles<AppRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Lockout.AllowedForNewUsers = true; // Default true
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2); // Default 5
+            options.Lockout.MaxFailedAccessAttempts = 3; // Default 5
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 6;
+            options.Password.RequiredUniqueChars = 1;
+            options.Lockout.AllowedForNewUsers = true;
+        });
+        
         return services;
     }
-    
+    public static void AddRepositoryPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<ApplicationDbContext>();
+        services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
+        services.AddScoped(typeof(IRepositoryBase<,>), typeof(RepositoryBase<,>));
+
+        services.AddScoped(typeof(IUnitOfWorkDbContext<>), typeof(UnitOfWorkDbContext<>));
+        services.AddScoped(typeof(IRepositoryBaseDbContext<,,>), typeof(RepositoryBaseDbContext<,,>));
+
+    }
+    public static OptionsBuilder<SqlServerRetryOptions> ConfigureSqlServerRetryOptionsPersistence(this IServiceCollection services, IConfigurationSection section)
+        => services
+            .AddOptions<SqlServerRetryOptions>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 }

@@ -1,3 +1,4 @@
+using DoAn.Domain.Entities;
 using DoAn.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,4 +21,5 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<Function> Functions { get; set; }
     public DbSet<ActionInFunction> ActionInFunctions { get; set; }
     public DbSet<Permission> Permissions { get; set; }
+    public DbSet<Product> Products { get; set; }
 }

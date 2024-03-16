@@ -11,7 +11,6 @@
       <Folder Include="Abstractions\" />
       <Folder Include="Configurations\" />
       <Folder Include="Interceptors\" />
-      <Folder Include="Repositories\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DoAn.Application\DoAn.Application.csproj" />
       <ProjectReference Include="..\DoAn.Domain\DoAn.Domain.csproj" />
     </ItemGroup>
 

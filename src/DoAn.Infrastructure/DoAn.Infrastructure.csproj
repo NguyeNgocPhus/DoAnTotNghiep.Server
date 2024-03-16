@@ -8,8 +8,17 @@
 
     <ItemGroup>
       <Folder Include="Abstractions\" />
-      <Folder Include="DependencyInjection\Extensions\" />
-      <Folder Include="DependencyInjection\Options\" />
+      <Folder Include="Caching\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DoAn.Application\DoAn.Application.csproj" />
+      <ProjectReference Include="..\DoAn.Shared\DoAn.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.3" />
     </ItemGroup>
 
 </Project>
