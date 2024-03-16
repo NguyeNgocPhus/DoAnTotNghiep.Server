@@ -1,6 +1,7 @@
 
 
 using DoAn.API.DependencyInjection.Extensions;
+using DoAn.API.Middlewares;
 using DoAn.Application.DependencyInjection.Extensions;
 using DoAn.Infrastructure.DependencyInjection.Extensions;
 using DoAn.Persistence.DependencyInjection.Extensions;
@@ -8,6 +9,8 @@ using DoAn.Persistence.DependencyInjection.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Middleware => Remember using middleware
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddJwtAuthenticationAPI(builder.Configuration);
 builder.Services.AddMediatRApplication();
 
@@ -30,6 +33,7 @@ if (app.Environment.IsDevelopment())
 {
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
