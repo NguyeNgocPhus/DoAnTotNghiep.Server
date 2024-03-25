@@ -64,10 +64,13 @@ public class WorkflowController : ApiControllerBase
     }
     [HttpDelete]
     [Route(Common.Url.ADMIN.Workflow.DeleteWorkflowDefinition)]
-    public async Task<ActionResult> DeleteWorkflowDefinition(string id,[FromQuery] string version,  CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteWorkflowDefinition(string Id,  CancellationToken cancellationToken)
     {
-        var query = new GetListWorkflowDefinitionQuery();
-        var result = await _mediator.Send(query, cancellationToken);
+        var command = new DeleteWorkflowDefinitionCommand()
+        {
+            DefinitionId = Id
+        };
+        var result = await _mediator.Send(command, cancellationToken);
         if (!result.IsSuccess)
         {
             

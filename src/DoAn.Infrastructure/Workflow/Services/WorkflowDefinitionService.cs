@@ -84,7 +84,15 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         }).ToList();
 
         await _workflowDefinitionStore.UpdateAsync(wfDefinition, cancellationToken);
-        return  _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
+        return _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
+    }
+
+    public async Task<bool> DeleteWorkflowDefinitionAsync(DeleteWorkflowDefinitionCommand data,
+        CancellationToken cancellationToken = default)
+    {
+        var specification = new GetWfDefinitionByDefinitionIdSpecification(data.DefinitionId);
+        var row = await _workflowDefinitionStore.DeleteManyAsync(specification, cancellationToken);
+        return row > 0;
     }
 
     public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(
