@@ -4,8 +4,10 @@ using DoAn.Application.Exceptions;
 using DoAn.Infrastructure.Workflow.Specifications;
 using DoAn.Shared.Services.V1.Workflow.Commands;
 using DoAn.Shared.Services.V1.Workflow.Responses;
+using Elsa;
 using Elsa.Models;
 using Elsa.Persistence;
+using Namotion.Reflection;
 using Open.Linq.AsyncExtensions;
 
 namespace DoAn.Infrastructure.Workflow.Services;
@@ -98,12 +100,10 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
     public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(
         CancellationToken cancellationToken = default)
     {
-        var worklows = await _workflowDefinitionStore.FindManyAsync(new WorkflowDefinitionPublishedSpecification(true),
+        var worklows = await _workflowDefinitionStore.FindManyAsync(new GetWfDefinitionByLatestVersionSpecification(true),
             cancellationToken: cancellationToken).ToList();
 
 
-        return worklows.Select(x => new WorkflowDefinitionResponse()
-        {
-        }).ToList();
+        return _mapper.Map<List<WorkflowDefinitionResponse>>(worklows);
     }
 }
