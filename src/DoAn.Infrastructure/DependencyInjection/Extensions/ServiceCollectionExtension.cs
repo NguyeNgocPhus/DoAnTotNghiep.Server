@@ -1,6 +1,7 @@
 using DoAn.Application.Abstractions;
 using DoAn.Infrastructure.Authentication;
 using DoAn.Infrastructure.Caching.Services;
+using DoAn.Infrastructure.Mapper;
 using DoAn.Infrastructure.Workflow.Services;
 using Elsa;
 using Elsa.Persistence.EntityFramework.Core.Extensions;
@@ -14,9 +15,10 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddServicesInfrastructure(this IServiceCollection services)
     {
+        services.AddAutoMapper(typeof(WorkflowProfile));
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICacheService, CacheService>();
-
+        
         return services;
     }
     public static void AddRedisServiceInfrastructure(this IServiceCollection services, IConfiguration configuration)

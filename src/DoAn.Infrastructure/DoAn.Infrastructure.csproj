@@ -15,7 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
+    
       <ProjectReference Include="..\DoAn.Application\DoAn.Application.csproj" />
+    
       <ProjectReference Include="..\DoAn.Shared\DoAn.Shared.csproj" />
     </ItemGroup>
 

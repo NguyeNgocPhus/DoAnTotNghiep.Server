@@ -5,5 +5,8 @@ namespace DoAn.Application.Abstractions;
 
 public interface IWorkflowDefinitionService
 {
-    public Task<CreateWorkflowResponse> CreateWorkflowAsync(CreateWorkflowCommand data);
+    public Task<CreateWorkflowResponse> CreateWorkflowDefinitionAsync(CreateWorkflowDefinitionCommand data, CancellationToken cancellationToken = default);
+    public Task<UpdateWorkflowDefinitionResponse> UpdateWorkflowDefinitionAsync(UpdateWorkflowDefinitionCommand data, CancellationToken cancellationToken = default);
+    
+    public Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(CancellationToken cancellationToken = default);
 }

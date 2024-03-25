@@ -13,13 +13,11 @@
       <Folder Include="Services\V1\Identity\Events\IntergrationEvents\" />
       <Folder Include="Services\V1\Identity\Queries\" />
       <Folder Include="Services\V1\Workflow\Events\" />
-      <Folder Include="Services\V1\Workflow\Queries\" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="11.9.0" />
       <PackageReference Include="MediatR" Version="12.2.0" />
     </ItemGroup>
-    
 
 </Project>

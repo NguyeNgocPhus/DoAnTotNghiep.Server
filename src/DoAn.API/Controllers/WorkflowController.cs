@@ -1,5 +1,5 @@
 using DoAn.Shared.Services.V1.Workflow.Commands;
-using Elsa.Persistence;
+using DoAn.Shared.Services.V1.Workflow.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -9,25 +9,69 @@ namespace DoAn.API.Controllers;
  
 public class WorkflowController : ApiControllerBase
 {
-
-    private readonly IWorkflowDefinitionStore _workflowDefinitionStore;
     private readonly IMediator _mediator;
-    public WorkflowController(IWorkflowDefinitionStore workflowDefinitionStore, IMediator mediator)
+    public WorkflowController(IMediator mediator)
     {
-        _workflowDefinitionStore = workflowDefinitionStore;
         _mediator = mediator;
     }
     
     [HttpPost]
-    [Route("Create")]
-    // [Authorize]
-    public async Task<ActionResult> CreateWorkflow([FromBody] CreateWorkflowCommand request, CancellationToken cancellationToken)
+    [Route(Common.Url.ADMIN.Workflow.CreateWorkflowDefinition)]
+    public async Task<ActionResult> CreateWorkflowDefinition([FromBody] CreateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
             
         }
-        return Ok(result.Value);
+        return Ok(result);
+    }
+    [HttpPut]
+    [Route(Common.Url.ADMIN.Workflow.UpdateWorkflowDefinition)]
+    public async Task<ActionResult> UpdateWorkflowDefinition(string Id, [FromBody] UpdateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
+    {
+        request.WorkflowDefinitionId = Id;
+        var result = await _mediator.Send(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Workflow.ViewListWorkflowDefinition)]
+    public async Task<ActionResult> GetListWorkflowDefinition(CancellationToken cancellationToken)
+    {
+        var query = new GetListWorkflowDefinitionQuery();
+        var result = await _mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Workflow.ViewWorkflowDefinition)]
+    public async Task<ActionResult> GetWorkflowDefinition(string id, [FromQuery] string version, CancellationToken cancellationToken)
+    {
+        var query = new GetListWorkflowDefinitionQuery();
+        var result = await _mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
+    [HttpDelete]
+    [Route(Common.Url.ADMIN.Workflow.DeleteWorkflowDefinition)]
+    public async Task<ActionResult> DeleteWorkflowDefinition(string id,[FromQuery] string version,  CancellationToken cancellationToken)
+    {
+        var query = new GetListWorkflowDefinitionQuery();
+        var result = await _mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
     }
 }

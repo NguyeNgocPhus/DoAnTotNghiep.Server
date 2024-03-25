@@ -6,7 +6,7 @@ using DoAn.Shared.Services.V1.Workflow.Responses;
 
 namespace DoAn.Application.UseCases.V1.Commands.Workflow;
 
-public class CreateWorkflowCommandHandler : ICommandHandler<CreateWorkflowCommand, CreateWorkflowResponse>
+public class CreateWorkflowCommandHandler : ICommandHandler<CreateWorkflowDefinitionCommand, CreateWorkflowResponse>
 {
     private readonly IWorkflowDefinitionService _workflowDefinitionService;
 
@@ -15,9 +15,9 @@ public class CreateWorkflowCommandHandler : ICommandHandler<CreateWorkflowComman
         _workflowDefinitionService = workflowDefinitionService;
     }
 
-    public async Task<Result<CreateWorkflowResponse>> Handle(CreateWorkflowCommand request, CancellationToken cancellationToken)
+    public async Task<Result<CreateWorkflowResponse>> Handle(CreateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {
-        var result = await _workflowDefinitionService.CreateWorkflowAsync(request);
-        return result;
+        var result = await _workflowDefinitionService.CreateWorkflowDefinitionAsync(request, cancellationToken);
+        return Result.Success(result);
     }
 }

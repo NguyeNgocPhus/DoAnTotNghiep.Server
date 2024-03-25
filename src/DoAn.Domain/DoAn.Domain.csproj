@@ -12,7 +12,6 @@
         <Folder Include="DependencyInjection\Extensions\"/>
         <Folder Include="DependencyInjection\Options\"/>
         <Folder Include="Enumerations\"/>
-        <Folder Include="Extensions\" />
         <Folder Include="ValueObjects\"/>
     </ItemGroup>
 

@@ -50,6 +50,12 @@ builder.Services.ConfigureSqlServerRetryOptionsPersistence(builder.Configuration
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
+
+builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy => policy
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowAnyOrigin()
+    .WithExposedHeaders("Content-Disposition")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -57,6 +63,7 @@ if (app.Environment.IsDevelopment())
 {
 }
 
+app.UseCors();
 app.UseStaticFiles();
 app.UseHttpActivities();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

@@ -10,6 +10,7 @@ public static class ServiceCollectionExtension
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(AssemblyReference.Assembly))
             .AddValidatorsFromAssembly(Shared.AssemblyReference.Assembly, includeInternalTypes: true);
+        services.AddAutoMapper(AssemblyReference.Assembly);
         return services;
     }
 }

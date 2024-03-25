@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace DoAn.Shared.Services.V1.Workflow.Validators;
 
-public class CreateWorkflowCommandValidator: AbstractValidator<CreateWorkflowCommand>
+public class CreateWorkflowDefinitionCommandValidator: AbstractValidator<CreateWorkflowDefinitionCommand>
 {
-    public CreateWorkflowCommandValidator()
+    public CreateWorkflowDefinitionCommandValidator()
     {
         RuleFor(command => command.Name)
             .NotEmpty();
