@@ -1,6 +1,7 @@
 using DoAn.Application.Abstractions;
 using DoAn.Infrastructure.Authentication;
 using DoAn.Infrastructure.Caching.Services;
+using DoAn.Infrastructure.Workflow.Services;
 using Elsa;
 using Elsa.Persistence.EntityFramework.Core.Extensions;
 using Elsa.Persistence.EntityFramework.SqlServer;
@@ -28,6 +29,9 @@ public static class ServiceCollectionExtension
     }
     public static void AddWorkflowInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<IWorkflowDefinitionService, WorkflowDefinitionService>();
+        
+        
         var connectionString = configuration.GetConnectionString("Workflow");
         var elsaSection = configuration.GetSection("Elsa");
         services.AddElsa(elsa => elsa

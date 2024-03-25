@@ -10,7 +10,8 @@
       <Folder Include="Abstractions\" />
       <Folder Include="Caching\" />
       <Folder Include="BackgroundJobs\" />
-      <Folder Include="Workflow\" />
+      <Folder Include="Workflow\Activities\Actions\" />
+      <Folder Include="Workflow\Activities\Triggers\" />
     </ItemGroup>
 
     <ItemGroup>
