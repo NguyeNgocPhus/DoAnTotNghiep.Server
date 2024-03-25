@@ -9,6 +9,8 @@
     <ItemGroup>
       <Folder Include="Abstractions\" />
       <Folder Include="Caching\" />
+      <Folder Include="BackgroundJobs\" />
+      <Folder Include="Workflow\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -17,6 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Elsa" Version="2.13.0" />
+        <PackageReference Include="Elsa.Activities.Http" Version="2.13.0" />
+        <PackageReference Include="Elsa.Activities.Temporal.Quartz" Version="2.13.0" />
+        <PackageReference Include="Elsa.Designer.Components.Web" Version="2.13.0" />
+        <PackageReference Include="Elsa.Persistence.EntityFramework.SqlServer" Version="2.13.0" />
+        <PackageReference Include="Elsa.Server.Api" Version="2.13.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
       <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.3" />
     </ItemGroup>

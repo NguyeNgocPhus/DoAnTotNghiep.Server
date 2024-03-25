@@ -6,8 +6,31 @@ using DoAn.Application.DependencyInjection.Extensions;
 using DoAn.Infrastructure.DependencyInjection.Extensions;
 using DoAn.Persistence.DependencyInjection.Extensions;
 using DoAn.Persistence.DependencyInjection.Options;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+#region logger
+builder
+    .Host
+    .UseSerilog(
+        (context, _, configuration) =>
+        {
+            configuration.ReadFrom.Configuration(context.Configuration);
+            // To allow to add custom properties into the context
+            //configuration.Enrich.FromGlobalLogContext();
+        }
+    );
+builder.Logging.ClearProviders();
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    //.MinimumLevel.Verbose()
+    .CreateLogger();
+Log.Logger = logger;
+builder.Logging.AddSerilog(logger);
+
+#endregion
 
 // Add Middleware => Remember using middleware
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
@@ -16,6 +39,7 @@ builder.Services.AddMediatRApplication();
 
 builder.Services.AddServicesInfrastructure();
 builder.Services.AddRedisServiceInfrastructure(builder.Configuration);
+builder.Services.AddWorkflowInfrastructure(builder.Configuration);
 
 // Persistence Layer
 //dotnet ef migrations add "Init" --project DoAn.Persistence --context ApplicationDbContext --startup-project DoAn.Api --output-dir Migrations 
@@ -33,11 +57,36 @@ if (app.Environment.IsDevelopment())
 {
 }
 
+app.UseStaticFiles();
+app.UseHttpActivities();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    // Elsa API Endpoints are implemented as regular ASP.NET Core API controllers.
+    endpoints.MapControllers()
+        // .RequireAuthorization()
+        ;
+    endpoints.MapFallbackToPage("/_Host");
+
+});
 
 
-app.Run();
+try
+{
+    Log.Information("Starting web host");
+    app.UseSerilogRequestLogging();
+    await app.RunAsync();
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.ToString());
+    Log.Fatal(ex, "Host terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
