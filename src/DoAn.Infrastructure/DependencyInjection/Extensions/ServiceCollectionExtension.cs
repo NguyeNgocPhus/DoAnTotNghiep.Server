@@ -2,12 +2,17 @@ using DoAn.Application.Abstractions;
 using DoAn.Infrastructure.Authentication;
 using DoAn.Infrastructure.Caching.Services;
 using DoAn.Infrastructure.Mapper;
+using DoAn.Infrastructure.Workflow.Activities.Actions;
+using DoAn.Infrastructure.Workflow.Activities.Triggers;
 using DoAn.Infrastructure.Workflow.Services;
+using DotLiquid;
+using DotLiquid.Tags;
 using Elsa;
 using Elsa.Persistence.EntityFramework.Core.Extensions;
 using Elsa.Persistence.EntityFramework.SqlServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Condition = DoAn.Infrastructure.Workflow.Activities.Actions.Condition;
 
 namespace DoAn.Infrastructure.DependencyInjection.Extensions;
 
@@ -37,10 +42,12 @@ public static class ServiceCollectionExtension
         var connectionString = configuration.GetConnectionString("Workflow");
         var elsaSection = configuration.GetSection("Elsa");
         services.AddElsa(elsa => elsa
-                // .AddActivity<WebhookTrigger>()
-                // .AddActivity<Filter>()
-                // .AddActivity<ChooseAgents>()
-                // .AddActivity<HttpResponseActivity>()
+                .AddActivity<FileUpload>()
+                .AddActivity<Approve>()
+                .AddActivity<Reject>()
+                .AddActivity<Condition>()
+                .AddActivity<Branch>()
+                .AddActivity<SendEmail>()
                 .AddQuartzTemporalActivities()
                 .AddHttpActivities(elsaSection.GetSection("Server").Bind)
                 .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(connectionString))
