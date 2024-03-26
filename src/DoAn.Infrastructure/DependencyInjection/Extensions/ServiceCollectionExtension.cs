@@ -37,7 +37,7 @@ public static class ServiceCollectionExtension
     public static void AddWorkflowInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IWorkflowDefinitionService, WorkflowDefinitionService>();
-        
+        services.AddScoped<IWorkflowExecuteService, WorkflowExecuteService>();
         
         var connectionString = configuration.GetConnectionString("Workflow");
         var elsaSection = configuration.GetSection("Elsa");
