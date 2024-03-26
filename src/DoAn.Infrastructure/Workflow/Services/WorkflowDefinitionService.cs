@@ -106,4 +106,12 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
 
         return _mapper.Map<List<WorkflowDefinitionResponse>>(worklows);
     }
+
+    public async Task<WorkflowDefinitionResponse> GetWorkflowDefinitionAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var result = await _workflowDefinitionStore.FindByDefinitionIdAsync( id,VersionOptions.Latest, cancellationToken);
+        if (result == null)
+            throw new WorkflowDefinitionNotFoundException("\"workflow definition not found\"");
+        return _mapper.Map<WorkflowDefinitionResponse>(result);
+    }   
 }

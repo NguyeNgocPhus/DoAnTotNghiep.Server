@@ -11,11 +11,12 @@ public class WorkflowProfile: Profile
     public WorkflowProfile()
     {
         CreateMap<UpdateWorkflowDefinitionCommand, UpdateWorkflowDefinitionResponse>();
-        // CreateMap<ActivityDefinition, Activity>();
-        // CreateMap<ActivityDefinitionProperty, ActivityProperty>();
-        // CreateMap<ConnectionDefinition, Connection>();
+        CreateMap<ActivityDefinition, Activity>();
+        CreateMap<ActivityDefinitionProperty, ActivityProperty>();
+        CreateMap<ConnectionDefinition, Connection>();
         CreateMap<WorkflowDefinition, WorkflowDefinitionResponse>()
-            .ForMember(x => x.Connections, opt => opt.Ignore())
-            .ForMember(x => x.Activities, opt => opt.Ignore());
+            // .ForMember(x => x.Connections, opt => opt.Ignore())
+            // .ForMember(x => x.Activities, opt => opt.Ignore())
+             ;
     }
 }

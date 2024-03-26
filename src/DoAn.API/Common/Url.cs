@@ -10,7 +10,7 @@ public static class Url
             public const string CreateWorkflowDefinition = "WorkflowDefinition";
             public const string UpdateWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string DeleteWorkflowDefinition = "WorkflowDefinition/{id}";
-            public const string ViewWorkflowDefinition = "WorkflowDefinitions/{id}";
+            public const string ViewWorkflowDefinition = "WorkflowDefinition/{id}";
         }
         public static class Identity
         {

@@ -52,9 +52,12 @@ public class WorkflowController : ApiControllerBase
     }
     [HttpGet]
     [Route(Common.Url.ADMIN.Workflow.ViewWorkflowDefinition)]
-    public async Task<ActionResult> GetWorkflowDefinition(string id, [FromQuery] string version, CancellationToken cancellationToken)
+    public async Task<ActionResult> GetWorkflowDefinition(string id, CancellationToken cancellationToken)
     {
-        var query = new GetListWorkflowDefinitionQuery();
+        var query = new GetWorkflowDefinitionQuery()
+        {
+            DefinitionId = id
+        };
         var result = await _mediator.Send(query, cancellationToken);
         if (!result.IsSuccess)
         {
