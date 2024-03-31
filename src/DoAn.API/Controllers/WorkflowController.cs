@@ -28,9 +28,9 @@ public class WorkflowController : ApiControllerBase
     }
     [HttpPut]
     [Route(Common.Url.ADMIN.Workflow.UpdateWorkflowDefinition)]
-    public async Task<ActionResult> UpdateWorkflowDefinition(string Id, [FromBody] UpdateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
+    public async Task<ActionResult> UpdateWorkflowDefinition(string id, [FromBody] UpdateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {
-        request.WorkflowDefinitionId = Id;
+        request.WorkflowDefinitionId = id;
         var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {

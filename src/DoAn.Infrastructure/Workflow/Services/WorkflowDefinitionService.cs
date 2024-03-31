@@ -42,6 +42,7 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         {
             DefinitionId = workflowDefinition.DefinitionId,
             Name = data.Name,
+            Version = workflowDefinition.Version,
             Description = data.Description
         };
     }
