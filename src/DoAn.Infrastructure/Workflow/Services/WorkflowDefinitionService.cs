@@ -90,12 +90,12 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         return _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
     }
 
-    public async Task<bool> DeleteWorkflowDefinitionAsync(DeleteWorkflowDefinitionCommand data,
+    public async Task<string> DeleteWorkflowDefinitionAsync(DeleteWorkflowDefinitionCommand data,
         CancellationToken cancellationToken = default)
     {
         var specification = new GetWfDefinitionByDefinitionIdSpecification(data.DefinitionId);
-        var row = await _workflowDefinitionStore.DeleteManyAsync(specification, cancellationToken);
-        return row > 0;
+        await _workflowDefinitionStore.DeleteManyAsync(specification, cancellationToken);
+        return data.DefinitionId;
     }
 
     public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(

@@ -16,7 +16,7 @@ public class DeleteWorkflowDefinitionCommandHandler : ICommandHandler<DeleteWork
 
     public async Task<Result> Handle(DeleteWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {
-        var isSuccess = await _workflowDefinitionService.DeleteWorkflowDefinitionAsync(request, cancellationToken);
-        return isSuccess ? Result.Success() : Result.Failure(Error.Default);
+        var definitionId = await _workflowDefinitionService.DeleteWorkflowDefinitionAsync(request, cancellationToken);
+        return Result.Success(definitionId);
     }
 }
