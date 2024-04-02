@@ -91,7 +91,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<ApplicationDbContext>();
         services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
         services.AddScoped(typeof(IRepositoryBase<,>), typeof(RepositoryBase<,>));
-
+        services.AddScoped<IImportTemplateRepository, ImportTemplateRepository>();
         services.AddScoped(typeof(IUnitOfWorkDbContext<>), typeof(UnitOfWorkDbContext<>));
         services.AddScoped(typeof(IRepositoryBaseDbContext<,,>), typeof(RepositoryBaseDbContext<,,>));
 

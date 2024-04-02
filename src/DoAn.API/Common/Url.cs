@@ -12,6 +12,15 @@ public static class Url
             public const string DeleteWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string ViewWorkflowDefinition = "WorkflowDefinition/{id}";
         }
+        public static class ImportTemplate
+        {
+            public const string Create = "ImportTemplate";
+            public const string Update = "ImportTemplate/{id}";
+            public const string Delete = "ImportTemplate/{id}";
+            public const string ImportData = "ImportTemplate/{id}/Import";
+            public const string View = "ImportTemplate/{id}";
+            public const string ViewList = "ImportTemplates";
+        }
         public static class Identity
         {
             public const string Login = "Login";

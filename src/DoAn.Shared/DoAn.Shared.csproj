@@ -12,6 +12,7 @@
       <Folder Include="Services\V1\Identity\Events\DomainEvents\" />
       <Folder Include="Services\V1\Identity\Events\IntergrationEvents\" />
       <Folder Include="Services\V1\Identity\Queries\" />
+      <Folder Include="Services\V1\ImportTemplate\Events\" />
       <Folder Include="Services\V1\Workflow\Events\" />
     </ItemGroup>
 

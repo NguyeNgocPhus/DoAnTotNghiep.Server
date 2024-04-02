@@ -22,4 +22,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<ActionInFunction> ActionInFunctions { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<ImportTemplate> ImportTemplates { get; set; }
+    public DbSet<ImportHistory> ImportHistories { get; set; }
 }

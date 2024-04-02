@@ -9,7 +9,6 @@
     <ItemGroup>
       <Folder Include="Behaviors\" />
       <Folder Include="DependencyInjection\Options\" />
-      <Folder Include="Mappers\" />
       <Folder Include="UseCases\V1\Events\" />
     </ItemGroup>
 
