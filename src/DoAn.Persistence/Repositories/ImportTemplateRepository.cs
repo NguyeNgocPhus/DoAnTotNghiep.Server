@@ -17,4 +17,9 @@ public class ImportTemplateRepository : RepositoryBase<ImportTemplate, Guid>, II
     {
         return await _dbContext.ImportTemplates.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
+
+    public async Task<List<ImportTemplate>> FindIgnoreDelete(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ImportTemplates.Where(x => !x.IsDeleted).ToListAsync(cancellationToken);
+    }
 }

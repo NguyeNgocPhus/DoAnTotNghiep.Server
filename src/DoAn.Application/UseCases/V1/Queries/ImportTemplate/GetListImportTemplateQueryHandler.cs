@@ -22,7 +22,7 @@ public class GetListImportTemplateQueryHandler : IQueryHandler<GetListImportTemp
     public async Task<Result<List<ImportTemplateResponse>>> Handle(GetListImportTemplateQuery request,
         CancellationToken cancellationToken)
     {
-        var importTemplate = await _repository.FindAll().ToListAsync(cancellationToken);
+        var importTemplate = await _repository.FindAll().Where(x => !x.IsDeleted).ToListAsync(cancellationToken);
         var result = _mapper.Map<List<ImportTemplateResponse>>(importTemplate);
         return Result.Success(result);
     }

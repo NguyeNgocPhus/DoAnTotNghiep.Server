@@ -1,3 +1,4 @@
+using AutoMapper;
 using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Shared.Abstractions.Messages;
@@ -12,11 +13,13 @@ public class CreateImportTemplateCommandHandler : ICommandHandler<CreateImportTe
 
     private readonly IImportTemplateRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public CreateImportTemplateCommandHandler(IImportTemplateRepository repository, IUnitOfWork unitOfWork)
+    public CreateImportTemplateCommandHandler(IImportTemplateRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
 
@@ -34,19 +37,17 @@ public class CreateImportTemplateCommandHandler : ICommandHandler<CreateImportTe
             Active = true,
             Description = request.Description,
             CreatedBy = Guid.NewGuid(),
-            Tag = "TCKT",
+            Tag = request.Tag,
             CreatedTime = DateTime.Now,
             DisplayOrder = 1,
             HasWorkflow = false,
-            
-        }
-            
-        ;
+
+        };
+        
         _repository.Add(importTemplate);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success(new CreateImportTemplateResponse()
-        {
-            Id = importTemplate.Id
-        });
+
+        var result = _mapper.Map<CreateImportTemplateResponse>(importTemplate);
+        return Result.Success(result);
     }
 }

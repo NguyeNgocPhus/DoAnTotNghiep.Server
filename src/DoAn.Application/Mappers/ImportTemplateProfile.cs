@@ -9,6 +9,7 @@ public class ImportTemplateProfile: Profile
     public ImportTemplateProfile()
     {
         CreateMap<ImportTemplate, ImportTemplateResponse>();
+        CreateMap<ImportTemplate, CreateImportTemplateResponse>();
        
     }
 }
