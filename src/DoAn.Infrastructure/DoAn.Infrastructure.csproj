@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Abstractions\" />
       <Folder Include="Caching\" />
       <Folder Include="BackgroundJobs\" />
     </ItemGroup>

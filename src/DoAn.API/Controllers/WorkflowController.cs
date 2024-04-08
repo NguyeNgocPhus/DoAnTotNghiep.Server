@@ -16,6 +16,7 @@ public class WorkflowController : ApiControllerBase
     }
     
     [HttpPost]
+    [Authorize("AtLeast21")]
     [Route(Common.Url.ADMIN.Workflow.CreateWorkflowDefinition)]
     public async Task<ActionResult> CreateWorkflowDefinition([FromBody] CreateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {

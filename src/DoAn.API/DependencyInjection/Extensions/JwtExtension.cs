@@ -4,6 +4,7 @@ using System.Text;
 using Azure;
 using DoAn.API.Attributes;
 using DoAn.Application.Abstractions;
+using DoAn.Infrastructure.Authorization;
 using DoAn.Infrastructure.DependencyInjection.Options;
 using DoAn.Shared.Services.V1.Identity.Responses;
 using Microsoft.AspNetCore.Authentication;
@@ -74,13 +75,14 @@ public static class JwtExtension
                    
                     if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var accessToken))
                     {
-                        //
+                        var jwt = accessToken.ToString().Split(" ")[1];
+                        
                         var cacheService =
                             (ICacheService)services.BuildServiceProvider().GetService(typeof(ICacheService))!;
                         var emailKey = context.Principal!.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Email)?.Value;
                         var authenticated = await cacheService.GetAsync<LoginResponse>(emailKey);
                         
-                        if (authenticated is null || authenticated.AccessToken != accessToken)
+                        if (authenticated is null || authenticated.AccessToken != jwt)
                         {
                             context.Response.Headers.Add("IS-TOKEN-REVOKED", "true");
                             context.Fail("Authentication fail. Token has been revoked!");
@@ -99,7 +101,11 @@ public static class JwtExtension
             //o.EventsType = typeof(CustomJwtBearerEvents);
         });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AtLeast21", policy =>
+                policy.Requirements.Add(new MinimumAgeRequirement(21)));
+        });
         // services.AddScoped<CustomJwtBearerEvents>();
     }
 }

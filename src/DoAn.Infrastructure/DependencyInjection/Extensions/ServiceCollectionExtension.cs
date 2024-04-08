@@ -1,5 +1,6 @@
 using DoAn.Application.Abstractions;
 using DoAn.Infrastructure.Authentication;
+using DoAn.Infrastructure.Authorization;
 using DoAn.Infrastructure.Caching.Services;
 using DoAn.Infrastructure.Mapper;
 using DoAn.Infrastructure.Workflow.Activities.Actions;
@@ -10,6 +11,7 @@ using DotLiquid.Tags;
 using Elsa;
 using Elsa.Persistence.EntityFramework.Core.Extensions;
 using Elsa.Persistence.EntityFramework.SqlServer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Condition = DoAn.Infrastructure.Workflow.Activities.Actions.Condition;
@@ -23,7 +25,7 @@ public static class ServiceCollectionExtension
         services.AddAutoMapper(typeof(WorkflowProfile));
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICacheService, CacheService>();
-        
+        services.AddSingleton<IAuthorizationHandler, MinimumAgeHandler>();
         return services;
     }
     public static void AddRedisServiceInfrastructure(this IServiceCollection services, IConfiguration configuration)

@@ -11,10 +11,13 @@ namespace DoAn.Application.UseCases.V1.Commands.Identity;
 public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
 {
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly ICacheService _cacheService;
+    
 
-    public LoginCommandHandler(IJwtTokenService jwtTokenService)
+    public LoginCommandHandler(IJwtTokenService jwtTokenService, ICacheService cacheService)
     {
         _jwtTokenService = jwtTokenService;
+        _cacheService = cacheService;
     }
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
+        await _cacheService.SetAsync(request.Email, login, cancellationToken);
         return Result.Success(login);
     }
 }
