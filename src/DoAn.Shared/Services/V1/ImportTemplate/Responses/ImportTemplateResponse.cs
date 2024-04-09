@@ -11,5 +11,6 @@ public class ImportTemplateResponse
     public bool HasWorkflow { get; set; }
     public string? WorkflowDefinitionId { get; set; }
     public int DisplayOrder { get; set; }
+    public Guid FileTemplateId { get; set; }
 
 }

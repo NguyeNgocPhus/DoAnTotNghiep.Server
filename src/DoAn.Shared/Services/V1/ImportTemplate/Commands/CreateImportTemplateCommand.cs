@@ -9,5 +9,6 @@ public class CreateImportTemplateCommand : ICommand<CreateImportTemplateResponse
     public string Tag { get; set; }
     public string Description { get; set; }
     public int DisplayOrder { get; set; } = 0;
+    public Guid FileTemplateId { get; set; }
     
 }

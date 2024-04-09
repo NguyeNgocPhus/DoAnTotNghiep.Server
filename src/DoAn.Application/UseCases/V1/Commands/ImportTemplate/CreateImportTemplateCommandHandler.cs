@@ -41,6 +41,7 @@ public class CreateImportTemplateCommandHandler : ICommandHandler<CreateImportTe
             CreatedTime = DateTime.Now,
             DisplayOrder = 1,
             HasWorkflow = false,
+            FileTemplateId = request.FileTemplateId
 
         };
         

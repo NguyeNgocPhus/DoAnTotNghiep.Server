@@ -33,6 +33,8 @@ public class UpdateImportTemplateCommandHandler : ICommandHandler<UpdateImportTe
         importTemplate.DisplayOrder = request.DisplayOrder;
         importTemplate.UpdatedBy = Guid.NewGuid();
         importTemplate.UpdatedTime = DateTime.Now;
+        importTemplate.FileTemplateId = request.FileTemplateId;
+        
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         
