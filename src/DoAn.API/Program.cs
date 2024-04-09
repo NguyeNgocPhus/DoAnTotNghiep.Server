@@ -1,9 +1,11 @@
 
 
 using DoAn.API.DependencyInjection.Extensions;
+using DoAn.API.DependencyInjection.Options;
 using DoAn.API.Middlewares;
 using DoAn.Application.DependencyInjection.Extensions;
 using DoAn.Infrastructure.DependencyInjection.Extensions;
+using DoAn.Persistence.Configurations.Configurations;
 using DoAn.Persistence.DependencyInjection.Extensions;
 using DoAn.Persistence.DependencyInjection.Options;
 using Serilog;
@@ -43,7 +45,7 @@ builder.Services.AddWorkflowInfrastructure(builder.Configuration);
 
 // Persistence Layer
 //dotnet ef migrations add "Init" --project DoAn.Persistence --context ApplicationDbContext --startup-project DoAn.Api --output-dir Migrations 
-//dotnet ef database update --project DistributedSystem.Persistence  --startup-project DistributedSystem.Api --context ApplicationDbContext
+// dotnet ef database update --project DoAn.Persistence  --startup-project DoAn.Api --context ApplicationDbContext   
 builder.Services.AddSqlServicePersistence();
 builder.Services.AddRepositoryPersistence();
 builder.Services.ConfigureSqlServerRetryOptionsPersistence(builder.Configuration.GetSection(nameof(SqlServerRetryOptions)));

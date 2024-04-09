@@ -4,12 +4,11 @@ using DoAn.Shared.Services.V1.ImportTemplate.Responses;
 
 namespace DoAn.Application.Mappers;
 
-public class ImportTemplateProfile: Profile
+public class ImportTemplateProfile : Profile
 {
     public ImportTemplateProfile()
     {
         CreateMap<ImportTemplate, ImportTemplateResponse>();
         CreateMap<ImportTemplate, CreateImportTemplateResponse>();
-       
     }
 }

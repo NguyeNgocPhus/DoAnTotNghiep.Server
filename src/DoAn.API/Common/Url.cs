@@ -12,6 +12,12 @@ public static class Url
             public const string DeleteWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string ViewWorkflowDefinition = "WorkflowDefinition/{id}";
         }
+        public static class FileStorage
+        {
+            public const string Upload = "FileStorage/Upload";
+            public const string Get = "FileStorage/Get/{id}";
+          
+        }
         public static class ImportTemplate
         {
             public const string Create = "ImportTemplate";

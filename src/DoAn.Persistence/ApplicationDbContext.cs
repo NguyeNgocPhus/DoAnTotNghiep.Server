@@ -24,4 +24,5 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<Product> Products { get; set; }
     public DbSet<ImportTemplate> ImportTemplates { get; set; }
     public DbSet<ImportHistory> ImportHistories { get; set; }
+    public DbSet<FileStorage> FileStorages { get; set; }
 }
