@@ -20,21 +20,31 @@ public class GetNodeDefinitionQueryHandler : IQueryHandler<GetNodeDefinitionQuer
     public async Task<Result<NodeDefinitionResponse>> Handle(GetNodeDefinitionQuery request,
         CancellationToken cancellationToken)
     {
-        var result =await _workflowDefinitionService.GetWorkflowDefinitionAsync(request.DefinitionId, cancellationToken);
+        var result =
+            await _workflowDefinitionService.GetWorkflowDefinitionAsync(request.DefinitionId, cancellationToken);
         var activity = result.Activities.FirstOrDefault(x => x.Type == request.Type);
         if (activity == null)
         {
             return Result.Success(new NodeDefinitionResponse());
         }
 
-        var property = activity.Properties.FirstOrDefault(x => x.Name == "DATA");
-        if (property == null)
+        var propertyData = activity.Properties.FirstOrDefault(x => x.Name == "DATA");
+        if (propertyData == null)
         {
             return Result.Success(new NodeDefinitionResponse());
         }
 
-        var data = property.Expressions.FirstOrDefault(x => x.Key == "Literal").Value;
-        return data == null ? Result.Success(new NodeDefinitionResponse()) : Result.Success(Newtonsoft.Json.JsonConvert.DeserializeObject<NodeDefinitionResponse>(data));
+        var propertyDescription = activity.Properties.FirstOrDefault(x => x.Name == "DESCRIPTION");
+
+
+        var data = propertyData.Expressions.FirstOrDefault(x => x.Key == "Literal").Value;
+        var description = propertyDescription?.Expressions.FirstOrDefault(x => x.Key == "Literal").Value ?? "";
+        return data == null
+            ? Result.Success(new NodeDefinitionResponse())
+            : Result.Success(new NodeDefinitionResponse()
+            {
+                Data = data,
+                Description = description
+            });
     }
 }
-
