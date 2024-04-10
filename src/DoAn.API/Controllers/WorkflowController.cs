@@ -81,4 +81,21 @@ public class WorkflowController : ApiControllerBase
         }
         return Ok(result);
     }
+    
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Workflow.ViewNode)]
+    public async Task<ActionResult> ViewNodeDetail(string id, string type,  CancellationToken cancellationToken)
+    {
+        var query = new GetNodeDefinitionQuery()
+        {
+            DefinitionId = id,
+            Type = type
+        };
+        var result = await _mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
 }

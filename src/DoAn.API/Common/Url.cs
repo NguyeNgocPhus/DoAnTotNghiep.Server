@@ -11,6 +11,7 @@ public static class Url
             public const string UpdateWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string DeleteWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string ViewWorkflowDefinition = "WorkflowDefinition/{id}";
+            public const string ViewNode = "WorkflowDefinition/{id}/Node/{type}";
         }
         public static class FileStorage
         {
