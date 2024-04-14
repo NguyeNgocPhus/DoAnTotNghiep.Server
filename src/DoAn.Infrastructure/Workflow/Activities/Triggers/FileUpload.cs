@@ -1,3 +1,4 @@
+using DoAn.Application.DTOs.Workflow;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
@@ -53,6 +54,10 @@ public class FileUpload : Activity
     {
         try
         {
+            var input = context.GetInput<ExecuteFileUpdateDto>();
+            
+            context.WorkflowExecutionContext.ContextId = input.FileId.ToString();
+            
             return Done();
         }
         catch (Exception ex)

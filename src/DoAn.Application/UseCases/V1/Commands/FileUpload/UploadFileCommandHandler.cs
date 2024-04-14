@@ -41,9 +41,7 @@ public class UploadFileCommandHandler : ICommandHandler<UploadFileCommand, FileS
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var result = _mapper.Map<FileStorageResponse>(entry);
-        return Result.Success(new FileStorageResponse()
-        {
-            Id = Guid.NewGuid(),
-        });
+        result.Data = null; // ignore data file xlsx
+        return Result.Success(result);
     }
 }

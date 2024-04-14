@@ -10,7 +10,9 @@ public static class Url
         }
         public static class Workflow
         {
+            public const string TestStartWorkflow = "StartWorkflow";
             public const string ExecuteWorkflow = "ExecuteWorkflow";
+            public const string GetCurrentStepWorkflow = "CurrentStepWorkflow/{fileId}";
             public const string ViewListWorkflowDefinition = "WorkflowDefinitions";
             public const string CreateWorkflowDefinition = "WorkflowDefinition";
             public const string UpdateWorkflowDefinition = "WorkflowDefinition/{id}";

@@ -8,3 +8,9 @@ public class WorkflowDefinitionNotFoundException : NotFoundException
     {
     }
 }
+public class WorkflowInstanceNotFoundException : NotFoundException
+{
+    public WorkflowInstanceNotFoundException(string message) : base(message)
+    {
+    }
+}
