@@ -28,13 +28,13 @@ public class GetNodeDefinitionQueryHandler : IQueryHandler<GetNodeDefinitionQuer
             return Result.Success(new NodeDefinitionResponse());
         }
 
-        var propertyData = activity.Properties.FirstOrDefault(x => x.Name == "DATA");
+        var propertyData = activity.Properties.FirstOrDefault(x => x.Name == "Data");
         if (propertyData == null)
         {
             return Result.Success(new NodeDefinitionResponse());
         }
 
-        var propertyDescription = activity.Properties.FirstOrDefault(x => x.Name == "DESCRIPTION");
+        var propertyDescription = activity.Properties.FirstOrDefault(x => x.Name == "Description");
 
 
         var data = propertyData.Expressions.FirstOrDefault(x => x.Key == "Literal").Value;

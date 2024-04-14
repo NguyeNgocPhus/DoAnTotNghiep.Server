@@ -5,6 +5,7 @@ using DoAn.Infrastructure.Caching.Services;
 using DoAn.Infrastructure.Mapper;
 using DoAn.Infrastructure.Workflow.Activities.Actions;
 using DoAn.Infrastructure.Workflow.Activities.Triggers;
+using DoAn.Infrastructure.Workflow.Providers;
 using DoAn.Infrastructure.Workflow.Services;
 using DotLiquid;
 using DotLiquid.Tags;
@@ -57,6 +58,9 @@ public static class ServiceCollectionExtension
                 .AddJavaScriptActivities()
             // .AddCustomTenantAccessor<CustomTenantAccessor>()
         );
+        services.AddBookmarkProvider<UploadFileBookmarkProvider>();
+        services.AddBookmarkProvider<ApproveBookmarkProvider>();
+        services.AddBookmarkProvider<RejectBookmarkProvider>();
         services.AddElsaApiEndpoints();
         services.AddRazorPages();
     }

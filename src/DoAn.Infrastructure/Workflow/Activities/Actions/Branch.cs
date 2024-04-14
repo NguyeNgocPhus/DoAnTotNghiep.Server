@@ -23,6 +23,17 @@ public class Branch : Activity
         ConsiderValuesAsOutcomes = true
     )]
     public ISet<string> Branches { get; set; } = new HashSet<string>();
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Position { get; set; } = default!;
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Description { get; set; } = default!;
+
 
     // Schedule the branches in reverse order so that the first branch will execute before the second one, etc.
     // This is important for scenarios where the user needs to schedule a blocking activity like a signal received event before actually sending a signal from a second second branch, causing a response signal to be triggered from another workflow (as an example).

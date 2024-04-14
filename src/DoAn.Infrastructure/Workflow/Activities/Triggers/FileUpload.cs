@@ -21,14 +21,23 @@ public class FileUpload : Activity
     {
         _workflowDefinition = workflowDefinition;
     }
-
     [ActivityInput(
-        UIHint = ActivityInputUIHints.Dropdown,
         DefaultSyntax = SyntaxNames.Literal,
-        Hint = "Mẫu File nhập liệu",
-        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid })
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
     ]
-    public string FileTemplate { get; set; } = default!;
+    public string Position { get; set; } = default!;
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Data { get; set; } = default!;
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Description { get; set; } = default!;
+    
+    
 
     protected override async ValueTask<IActivityExecutionResult> OnExecuteAsync(ActivityExecutionContext context)
     {

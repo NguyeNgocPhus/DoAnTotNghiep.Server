@@ -29,12 +29,19 @@ public class SendEmail : Activity
     }
     [ActivityOutput]
     public object? Output { get; set; }
+    
     [ActivityInput(
-        UIHint = ActivityInputUIHints.Dropdown,
-        Hint = "Loại Email",
-        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid }
-    )]
-    public string Type { get; set; } = default!;
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Position { get; set; } = default!;
+    
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Description { get; set; } = default!;
+
     protected override async ValueTask<IActivityExecutionResult> OnExecuteAsync(ActivityExecutionContext context)
     {
         // get wf definition by definition id

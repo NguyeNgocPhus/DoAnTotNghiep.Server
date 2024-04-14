@@ -1,3 +1,5 @@
+using DoAn.Application.Abstractions;
+using DoAn.Application.DTOs.Workflow;
 using DoAn.Shared.Services.V1.Workflow.Commands;
 using DoAn.Shared.Services.V1.Workflow.Queries;
 using MediatR;
@@ -10,13 +12,22 @@ namespace DoAn.API.Controllers;
 public class WorkflowController : ApiControllerBase
 {
     private readonly IMediator _mediator;
-    public WorkflowController(IMediator mediator)
+    private readonly IWorkflowExecuteService _workflowExecuteService;
+    public WorkflowController(IMediator mediator, IWorkflowExecuteService workflowExecuteService)
     {
         _mediator = mediator;
+        _workflowExecuteService = workflowExecuteService;
     }
-    
     [HttpPost]
-    [Authorize("AtLeast21")]
+    // [Authorize("AtLeast21")]
+    [Route(Common.Url.ADMIN.Workflow.ExecuteWorkflow)]
+    public async Task<ActionResult> TestExecuteWf([FromBody] ExecuteFileUpdateDto request, CancellationToken cancellationToken)
+    {
+        var result = await _workflowExecuteService.ExecuteWorkflowsAsync(request, cancellationToken);
+        return Ok(result);
+    }
+    [HttpPost]
+   // [Authorize("AtLeast21")]
     [Route(Common.Url.ADMIN.Workflow.CreateWorkflowDefinition)]
     public async Task<ActionResult> CreateWorkflowDefinition([FromBody] CreateWorkflowDefinitionCommand request, CancellationToken cancellationToken)
     {

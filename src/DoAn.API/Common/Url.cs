@@ -4,8 +4,13 @@ public static class Url
 {
     public static class ADMIN
     {
+        public static class Roles
+        {
+            public const string ViewList = "Roles";
+        }
         public static class Workflow
         {
+            public const string ExecuteWorkflow = "ExecuteWorkflow";
             public const string ViewListWorkflowDefinition = "WorkflowDefinitions";
             public const string CreateWorkflowDefinition = "WorkflowDefinition";
             public const string UpdateWorkflowDefinition = "WorkflowDefinition/{id}";

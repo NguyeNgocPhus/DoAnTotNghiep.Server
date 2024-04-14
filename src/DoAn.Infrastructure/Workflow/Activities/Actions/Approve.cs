@@ -35,14 +35,19 @@ public class Approve : Activity
     [ActivityInput(Hint = "The name of the signal to wait for.",
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid })]
     public string Signal { get; set; } = default!;
-
+    
     [ActivityInput(
-        UIHint = ActivityInputUIHints.Dropdown,
         Hint = "Quyền người dùng",
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid }
     )]
-    public string Role { get; set; } = default!;
-
+    public string Data { get; set; } = default!;
+    
+    [ActivityInput(
+        DefaultSyntax = SyntaxNames.Literal,
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
+    ]
+    public string Position { get; set; } = default!;
+    
 
     protected override bool OnCanExecute(ActivityExecutionContext context)
     {
