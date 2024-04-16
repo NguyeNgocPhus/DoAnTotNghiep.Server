@@ -5,9 +5,6 @@ namespace DoAn.Shared.Services.V1.ImportTemplate.Commands;
 
 public class ImportDataCommand : ICommand
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Tag { get; set; }
-    public string Description { get; set; }
-    public int DisplayOrder { get; set; } = 0;
+    public Guid ImportTemplateId { get; set; }
+    public Guid FileUploadId { get; set; }
 }

@@ -31,7 +31,7 @@ public static class Url
             public const string Create = "ImportTemplate";
             public const string Update = "ImportTemplate/{id}";
             public const string Delete = "ImportTemplate/{id}";
-            public const string ImportData = "ImportTemplate/{id}/Import";
+            public const string ImportData = "ImportTemplate/ImportData";
             public const string View = "ImportTemplate/{id}";
             public const string ViewList = "ImportTemplates";
         }

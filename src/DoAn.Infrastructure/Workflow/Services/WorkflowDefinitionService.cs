@@ -5,8 +5,10 @@ using DoAn.Infrastructure.Workflow.Specifications;
 using DoAn.Shared.Services.V1.Workflow.Commands;
 using DoAn.Shared.Services.V1.Workflow.Responses;
 using Elsa;
+using Elsa.Events;
 using Elsa.Models;
 using Elsa.Persistence;
+using MediatR;
 using Namotion.Reflection;
 using Open.Linq.AsyncExtensions;
 
@@ -16,11 +18,14 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
 {
     private readonly IWorkflowDefinitionStore _workflowDefinitionStore;
     private readonly IMapper _mapper;
+    private readonly IPublisher _publisher;
+    
 
-    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper)
+    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper, IPublisher publisher)
     {
         _workflowDefinitionStore = workflowDefinitionStore;
         _mapper = mapper;
+        _publisher = publisher;
     }
 
     public async Task<CreateWorkflowResponse> CreateWorkflowDefinitionAsync(CreateWorkflowDefinitionCommand data,
@@ -87,6 +92,8 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         }).ToList();
 
         await _workflowDefinitionStore.UpdateAsync(wfDefinition, cancellationToken);
+        await _publisher.Publish(new WorkflowDefinitionPublished(wfDefinition), cancellationToken);
+        
         return _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
     }
 

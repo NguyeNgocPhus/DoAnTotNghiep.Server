@@ -314,6 +314,9 @@ namespace DoAn.Persistence.Migrations
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("ImportTemplateId")
                         .HasColumnType("uniqueidentifier");
 

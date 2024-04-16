@@ -41,10 +41,9 @@ public class ImportTemplateController : ApiControllerBase
     }
     [HttpPost]
     [Route(Common.Url.ADMIN.ImportTemplate.ImportData)]
-    public async Task<ActionResult> ImportData(CancellationToken cancellationToken)
+    public async Task<ActionResult> ImportData([FromBody] ImportDataCommand request,  CancellationToken cancellationToken)
     {
-        var query = new ImportDataCommand();
-        var result = await _mediator.Send(query, cancellationToken);
+        var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
             

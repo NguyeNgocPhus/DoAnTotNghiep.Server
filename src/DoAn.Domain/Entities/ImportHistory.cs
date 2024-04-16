@@ -9,7 +9,7 @@ namespace DoAn.Domain.Entities
     {       
         public Guid? RoleProcessNextId { get; set; }
         public Guid ImportTemplateId { get; set; }
-       
+        public Guid FileId { get; set; }
         public int Version { get; set; }
         public string Status { get; set; }
 
