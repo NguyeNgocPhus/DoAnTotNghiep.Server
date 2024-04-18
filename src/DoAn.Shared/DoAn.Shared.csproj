@@ -14,6 +14,9 @@
       <Folder Include="Services\V1\Identity\Events\DomainEvents\" />
       <Folder Include="Services\V1\Identity\Events\IntergrationEvents\" />
       <Folder Include="Services\V1\Identity\Queries\" />
+      <Folder Include="Services\V1\ImportHistory\Commands\" />
+      <Folder Include="Services\V1\ImportHistory\Events\" />
+      <Folder Include="Services\V1\ImportHistory\Validators\" />
       <Folder Include="Services\V1\ImportTemplate\Events\" />
       <Folder Include="Services\V1\ImportTemplate\Validators\" />
       <Folder Include="Services\V1\Workflow\Events\" />

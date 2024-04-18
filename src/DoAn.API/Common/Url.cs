@@ -35,6 +35,10 @@ public static class Url
             public const string View = "ImportTemplate/{id}";
             public const string ViewList = "ImportTemplates";
         }
+        public static class ImportHistory
+        {
+            public const string ViewList = "ImportHistories";
+        }
         public static class Identity
         {
             public const string Login = "Login";
