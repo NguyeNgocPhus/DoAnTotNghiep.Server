@@ -15,20 +15,23 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
     private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
     private readonly IRepositoryBase<Domain.Entities.ImportTemplate, Guid> _importTemplateRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
     
 
     public ImportDataCommandHandler(IRepositoryBase<FileStorage, Guid> fileStorageRepository,
         IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
-        IRepositoryBase<Domain.Entities.ImportTemplate, Guid> importTemplateRepository, IUnitOfWork unitOfWork)
+        IRepositoryBase<Domain.Entities.ImportTemplate, Guid> importTemplateRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _fileStorageRepository = fileStorageRepository;
         _importHistoryRepository = importHistoryRepository;
         _importTemplateRepository = importTemplateRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ImportDataCommand request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.UserId;
         var importTemplate = await _importTemplateRepository.FindByIdAsync(request.ImportTemplateId, cancellationToken);
         if (importTemplate is null)
         {
@@ -46,7 +49,8 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
         {
             Id = Guid.NewGuid(),
             ImportTemplateId = importTemplate.Id,
-            CreatedBy = Guid.NewGuid(),
+            UserId = Guid.Parse(userId),
+            CreatedBy = Guid.Parse(userId),
             CreatedTime = DateTime.Now,
             Status = "PENDING",
             Version = 1,

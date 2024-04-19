@@ -176,30 +176,27 @@ namespace DoAn.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDirector")
+                    b.Property<bool?>("IsDirector")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<bool>("IsHeadOfDepartment")
+                    b.Property<bool?>("IsHeadOfDepartment")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("IsReceipient")
+                    b.Property<int?>("IsReceipient")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(-1);
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -226,7 +223,7 @@ namespace DoAn.Persistence.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("PositionId")
+                    b.Property<Guid?>("PositionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SecurityStamp")
@@ -336,12 +333,17 @@ namespace DoAn.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Version")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ImportTemplateId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ImportHistory", (string)null);
                 });
@@ -572,7 +574,15 @@ namespace DoAn.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DoAn.Domain.Entities.Identity.AppUser", "User")
+                        .WithMany("ImportHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("ImportTemplate");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -645,6 +655,8 @@ namespace DoAn.Persistence.Migrations
             modelBuilder.Entity("DoAn.Domain.Entities.Identity.AppUser", b =>
                 {
                     b.Navigation("Claims");
+
+                    b.Navigation("ImportHistories");
 
                     b.Navigation("Logins");
 

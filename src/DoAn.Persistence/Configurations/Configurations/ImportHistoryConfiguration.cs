@@ -14,5 +14,8 @@ internal sealed class ImportHistoryConfiguration : IEntityTypeConfiguration<Impo
 
         builder.HasKey(x => x.Id);
       
+        // Each User can have many Permission
+        builder.HasOne(e => e.User)
+            .WithMany(x=>x.ImportHistories).OnDelete(DeleteBehavior.Cascade);
     }
 }

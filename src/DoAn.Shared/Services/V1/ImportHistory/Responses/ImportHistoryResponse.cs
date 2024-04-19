@@ -13,4 +13,7 @@ public class ImportHistoryResponse
     public Guid FileId { get; set; }
     public int Version { get; set; }
     public string Status { get; set; }
+    public string CreatedByName { get; set; }
+    public string ImportTemplateName { get; set; }
+        
 }

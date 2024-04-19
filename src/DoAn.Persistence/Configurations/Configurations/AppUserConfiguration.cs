@@ -40,5 +40,11 @@ internal sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
             .WithOne()
             .HasForeignKey(ur => ur.UserId)
             .IsRequired();
+        
+        // Each User can have many entries in the UserRole join table
+        builder.HasMany(e => e.ImportHistories)
+            .WithOne()
+            .HasForeignKey(ur => ur.UserId)
+            .IsRequired();
     }
 }
