@@ -12,7 +12,7 @@ public class AppUser : IdentityUser<Guid>
 
     public DateTime? DayOfBirth { get; set; }
 
-    public bool? IsDirector { get; set; }
+    public bool IsDirector { get; set; }
 
     public bool? IsHeadOfDepartment { get; set; }
 

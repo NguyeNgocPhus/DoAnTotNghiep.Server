@@ -1,4 +1,5 @@
 using DoAn.Application.Abstractions;
+using DoAn.Application.Exceptions;
 using DoAn.Domain.Entities.Identity;
 using DoAn.Shared.Abstractions.Messages;
 using DoAn.Shared.Abstractions.Shared;
@@ -22,21 +23,43 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, UserR
 
     public async Task<Result<UserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        var existUser = await _userManager.FindByEmailAsync(request.Email);
+        if (existUser != null)
+        {
+            throw new DuplicateUserException("Duplicate user");
+        }
+        
+        
         var passwordDefault = "123@123aA";
         var user = new AppUser()
         {
+            Id = Guid.NewGuid(),
+            FullName = request.Name,
             UserName = request.Name,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
             PasswordHash = _passwordGeneratorService.HashPassword(passwordDefault),
         };
-        await _userManager.CreateAsync(user);
+
+        var userResult  = await _userManager.CreateAsync(user);
+        if (userResult.Succeeded)
+        {
+            var currentUser = await _userManager.FindByIdAsync(user.Id.ToString()); 
+            await _userManager.AddToRolesAsync(currentUser, request.Roles);
+        }
+        else
+        { 
+            throw new DuplicateUserException(string.Join(",", userResult.Errors.Select(x=>x.Description)));
+        }
+        
         return Result.Success(new UserResponse()
         {
             Id = user.Id,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-            Name = user.UserName
+            UserName = user.UserName,
+            FullName = user.UserName,
+            Roles = request.Roles
         });
     }
 }

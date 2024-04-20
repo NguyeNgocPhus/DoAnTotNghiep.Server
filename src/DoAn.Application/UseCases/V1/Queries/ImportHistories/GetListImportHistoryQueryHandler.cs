@@ -43,7 +43,7 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
             });
             
 
-
+        
         var result = await importTemplate.ToListAsync(cancellationToken);
         return Result.Success(result);
     }

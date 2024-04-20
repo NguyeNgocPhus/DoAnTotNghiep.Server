@@ -13,7 +13,6 @@
       <Folder Include="Services\V1\FileStorage\Events\IntergrationEvents\" />
       <Folder Include="Services\V1\Identity\Events\DomainEvents\" />
       <Folder Include="Services\V1\Identity\Events\IntergrationEvents\" />
-      <Folder Include="Services\V1\Identity\Queries\" />
       <Folder Include="Services\V1\ImportHistory\Commands\" />
       <Folder Include="Services\V1\ImportHistory\Events\" />
       <Folder Include="Services\V1\ImportHistory\Validators\" />

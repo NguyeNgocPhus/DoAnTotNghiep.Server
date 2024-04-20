@@ -1,4 +1,5 @@
 using DoAn.Shared.Services.V1.Identity.Commands;
+using DoAn.Shared.Services.V1.Identity.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,17 @@ public class IdentityController : ApiControllerBase
         return Ok(result.Value);
     }
     
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Identity.User.ViewList)]
+    public async Task<ActionResult> GetListUser(CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetListUserQuery(), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
     
     [HttpPost]
     [Route(Common.Url.ADMIN.Identity.User.Create)]
@@ -34,6 +46,6 @@ public class IdentityController : ApiControllerBase
         {
             
         }
-        return Ok(result.Value);
+        return Ok(result);
     }
 }
