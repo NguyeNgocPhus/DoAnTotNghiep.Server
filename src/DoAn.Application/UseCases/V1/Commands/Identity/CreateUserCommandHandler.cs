@@ -34,8 +34,11 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, UserR
         var user = new AppUser()
         {
             Id = Guid.NewGuid(),
-            FullName = request.Name,
-            UserName = request.Name,
+            FirstName = request.FirstName, 
+            LastName = request.LastName,
+            FullName = request.FirstName + request.LastName,
+            UserName = request.UserName,
+            PositionId = Guid.NewGuid(),
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
             PasswordHash = _passwordGeneratorService.HashPassword(passwordDefault),
@@ -58,7 +61,9 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, UserR
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
             UserName = user.UserName,
-            FullName = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            FullName = user.FirstName + user.LastName ,
             Roles = request.Roles
         });
     }

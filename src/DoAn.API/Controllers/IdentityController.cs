@@ -48,4 +48,15 @@ public class IdentityController : ApiControllerBase
         }
         return Ok(result);
     }
+    [HttpPut]
+    [Route(Common.Url.ADMIN.Identity.User.Update)]
+    public async Task<ActionResult> UpdateUser([FromBody] UpdateUserCommand request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+
+        }
+        return Ok(result);
+    }
 }
