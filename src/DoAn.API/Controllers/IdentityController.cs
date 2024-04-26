@@ -59,4 +59,16 @@ public class IdentityController : ApiControllerBase
         }
         return Ok(result);
     }
+
+    [HttpDelete]
+    [Route(Common.Url.ADMIN.Identity.User.Delete)]
+    public async Task<ActionResult> DeleteUser([FromBody] DeleteUserCommand request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+
+        }
+        return Ok(result);
+    }
 }
