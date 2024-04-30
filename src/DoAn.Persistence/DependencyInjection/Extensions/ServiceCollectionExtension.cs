@@ -94,6 +94,9 @@ public static class ServiceCollectionExtension
         services.AddScoped<IImportTemplateRepository, ImportTemplateRepository>();
         services.AddScoped(typeof(IUnitOfWorkDbContext<>), typeof(UnitOfWorkDbContext<>));
         services.AddScoped(typeof(IRepositoryBaseDbContext<,,>), typeof(RepositoryBaseDbContext<,,>));
+        services.AddScoped<IUserRepository, UserRepository>();
+
+
 
     }
     public static OptionsBuilder<SqlServerRetryOptions> ConfigureSqlServerRetryOptionsPersistence(this IServiceCollection services, IConfigurationSection section)

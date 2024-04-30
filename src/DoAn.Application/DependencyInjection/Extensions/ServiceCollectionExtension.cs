@@ -13,7 +13,7 @@ public static class ServiceCollectionExtension
         // services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<IPasswordGeneratorService, PasswordGeneratorService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
-        
+       
         return services;
     }
     public static IServiceCollection AddMediatRApplication(this IServiceCollection services)
