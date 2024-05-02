@@ -10,8 +10,11 @@ using DoAn.Infrastructure.Workflow.Services;
 using DotLiquid;
 using DotLiquid.Tags;
 using Elsa;
+using Elsa.Persistence.EntityFramework.Core;
 using Elsa.Persistence.EntityFramework.Core.Extensions;
 using Elsa.Persistence.EntityFramework.SqlServer;
+using Elsa.Services;
+using Elsa.Services.Workflows;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,14 +58,17 @@ public static class ServiceCollectionExtension
                 .AddQuartzTemporalActivities()
                 .AddHttpActivities(elsaSection.GetSection("Server").Bind)
                 .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(connectionString))
-                .AddConsoleActivities()
-                .AddJavaScriptActivities()
+                               .NoCoreActivities()
+            
             // .AddCustomTenantAccessor<CustomTenantAccessor>()
         );
         services.AddBookmarkProvider<UploadFileBookmarkProvider>();
         services.AddBookmarkProvider<ApproveBookmarkProvider>();
         services.AddBookmarkProvider<RejectBookmarkProvider>();
+        services.AddScoped<ElsaContext, ElsaContext>();
         services.AddElsaApiEndpoints();
+        
         services.AddRazorPages();
+        services.AddScoped<IWorkflowRegistry, WorkflowRegistry>();
     }
 }

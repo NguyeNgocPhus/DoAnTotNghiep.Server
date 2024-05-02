@@ -8,6 +8,7 @@ public class UploadFileBookmarkProvider: BookmarkProvider<FileUploadBookmark, Fi
 {
     public override async ValueTask<IEnumerable<BookmarkResult>> GetBookmarksAsync(BookmarkProviderContext<FileUpload> context, CancellationToken cancellationToken)
     {
+        var a = await context.ReadActivityPropertyAsync<FileUpload, string>(x => x.Data, cancellationToken);
         var supportedExtensions = (await context.ReadActivityPropertyAsync<FileUpload, string>(x => x.Data, cancellationToken)) ?? string.Empty;
 
         return new[] { Result(new FileUploadBookmark(supportedExtensions)) };
