@@ -32,14 +32,17 @@ public class GetListUserQueryHandler : IQueryHandler<GetListUserQuery, PagedResu
         CancellationToken cancellationToken)
     {
         var query = _userRepository.GetUsersAsync();
-        
-        query = query.Where(x => x.UserName.Contains(request.Keyword) || x.Email.Contains(request.Keyword));
+
+        if (request.Keyword != null)
+        {
+            query = query.Where(x => x.UserName.Contains(request.Keyword) || x.Email.Contains(request.Keyword));
+        }
 
         query = request.OrderByDesc
             ? query.OrderByDescending(GetSortProperty(request))
             : query.OrderBy(GetSortProperty(request));
 
-        var users = await PagedResult<UserResponse>.CreateAsync(query, 1, 100);
+        var users = await PagedResult<UserResponse>.CreateAsync(query, request.Page, request.Size);
 
         return Result.Success(users);
     }

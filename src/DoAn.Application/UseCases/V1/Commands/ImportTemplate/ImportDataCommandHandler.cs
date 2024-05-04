@@ -1,5 +1,6 @@
 using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
+using DoAn.Application.DTOs.Workflow;
 using DoAn.Application.Exceptions;
 using DoAn.Domain.Entities;
 using DoAn.Shared.Abstractions.Messages;
@@ -16,17 +17,19 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
     private readonly IRepositoryBase<Domain.Entities.ImportTemplate, Guid> _importTemplateRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IWorkflowLaunchpadService _workflowLaunchpadService;
     
 
     public ImportDataCommandHandler(IRepositoryBase<FileStorage, Guid> fileStorageRepository,
         IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
-        IRepositoryBase<Domain.Entities.ImportTemplate, Guid> importTemplateRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        IRepositoryBase<Domain.Entities.ImportTemplate, Guid> importTemplateRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IWorkflowLaunchpadService workflowLaunchpadService)
     {
         _fileStorageRepository = fileStorageRepository;
         _importHistoryRepository = importHistoryRepository;
         _importTemplateRepository = importTemplateRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
+        _workflowLaunchpadService = workflowLaunchpadService;
     }
 
     public async Task<Result> Handle(ImportDataCommand request, CancellationToken cancellationToken)
@@ -59,6 +62,13 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
         };
         _importHistoryRepository.Add(importHistory);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        // start workflow
+        await _workflowLaunchpadService.StartWorkflowsAsync(new ExecuteFileUpdateDto()
+        {
+            FileId = file.Id,
+            ImportTemplateId = importTemplate.Id.ToString()
+        },cancellationToken);
         
         return Result.Success();
 

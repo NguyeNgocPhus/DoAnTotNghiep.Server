@@ -12,6 +12,7 @@ using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
+using Newtonsoft.Json;
 using Open.Linq.AsyncExtensions;
 
 namespace DoAn.Infrastructure.Workflow.Services;
@@ -39,7 +40,7 @@ public class WorkflowLaunchpadService : IWorkflowLaunchpadService
                 importTemplateId = data.ImportTemplateId
             };
         var filteredContext = new WorkflowsQuery(ActivityType: nameof(FileUpload),
-            Bookmark: new FileUploadBookmark(Newtonsoft.Json.JsonConvert.SerializeObject(query)));
+            Bookmark: new FileUploadBookmark(JsonConvert.SerializeObject(query)));
         var filteredWorkflows =
             await _workflowLaunchpad.FindWorkflowsAsync(filteredContext, cancellationToken).ToList();
 

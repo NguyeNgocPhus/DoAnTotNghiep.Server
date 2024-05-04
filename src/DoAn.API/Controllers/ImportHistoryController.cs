@@ -15,15 +15,11 @@ public class ImportHistoryController : ApiControllerBase
 
     [HttpGet]
     [Route(Common.Url.ADMIN.ImportHistory.ViewList)]
-    public async Task<ActionResult> GetList([FromQuery] Guid? importTemplateId, [FromQuery] string? status,
+    public async Task<ActionResult> GetList([FromQuery] GetListImportHistoryQuery request,
         CancellationToken cancellationToken)
     {
-        var query = new GetListImportHistoryQuery()
-        {
-            ImportTemplateId = importTemplateId,
-            Status = status
-        };
-        var result = await _mediator.Send(query, cancellationToken);
+        
+        var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
         }

@@ -8,6 +8,7 @@ using Elsa;
 using Elsa.Events;
 using Elsa.Models;
 using Elsa.Persistence;
+using Elsa.Services;
 using MediatR;
 using Namotion.Reflection;
 using Open.Linq.AsyncExtensions;
@@ -17,15 +18,17 @@ namespace DoAn.Infrastructure.Workflow.Services;
 public class WorkflowDefinitionService : IWorkflowDefinitionService
 {
     private readonly IWorkflowDefinitionStore _workflowDefinitionStore;
+    private readonly IWorkflowPublisher _workflowPublisher;
     private readonly IMapper _mapper;
     private readonly IPublisher _publisher;
     
 
-    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper, IPublisher publisher)
+    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper, IPublisher publisher, IWorkflowPublisher workflowPublisher)
     {
         _workflowDefinitionStore = workflowDefinitionStore;
         _mapper = mapper;
         _publisher = publisher;
+        _workflowPublisher = workflowPublisher;
     }
 
     public async Task<CreateWorkflowResponse> CreateWorkflowDefinitionAsync(CreateWorkflowDefinitionCommand data,
@@ -66,7 +69,7 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
 
         wfDefinition.Description = data.Description;
         wfDefinition.Name = data.Name;
-
+        wfDefinition.IsPublished = true;
         wfDefinition.Activities = data.Activities.Select(x => new ActivityDefinition()
         {
             ActivityId = x.ActivityId,
@@ -92,7 +95,9 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         }).ToList();
 
         await _workflowDefinitionStore.UpdateAsync(wfDefinition, cancellationToken);
+        
         await _publisher.Publish(new WorkflowDefinitionPublished(wfDefinition), cancellationToken);
+        await _publisher.Publish(new WorkflowDefinitionSaved(wfDefinition), cancellationToken);
         
         return _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
     }
