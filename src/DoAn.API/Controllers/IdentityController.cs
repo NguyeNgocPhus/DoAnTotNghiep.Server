@@ -40,9 +40,9 @@ public class IdentityController : ApiControllerBase
 
     [HttpGet]
     [Route(Common.Url.ADMIN.Identity.User.ViewList)]
-    public async Task<ActionResult> GetListUser(CancellationToken cancellationToken)
+    public async Task<ActionResult> GetListUser([FromQuery] GetListUserQuery request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new GetListUserQuery(), cancellationToken);
+        var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
             
@@ -61,6 +61,22 @@ public class IdentityController : ApiControllerBase
         }
         return Ok(result);
     }
+    
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Identity.User.View)]
+    public async Task<ActionResult> GetUserById(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetUserByIdQuery()
+        {
+            Id = id
+        }, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            
+        }
+        return Ok(result);
+    }
+    
     [HttpPut]
     [Route(Common.Url.ADMIN.Identity.User.Update)]
     public async Task<ActionResult> UpdateUser([FromBody] UpdateUserCommand request, CancellationToken cancellationToken)

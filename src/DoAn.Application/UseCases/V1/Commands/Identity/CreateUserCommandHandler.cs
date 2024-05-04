@@ -34,10 +34,10 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, UserR
         var user = new AppUser()
         {
             Id = Guid.NewGuid(),
-            FirstName = request.FirstName, 
-            LastName = request.LastName,
-            FullName = request.FirstName + request.LastName,
-            UserName = request.UserName,
+            FirstName = request.Name, 
+            LastName = request.Name,
+            FullName = request.Name ,
+            UserName = request.Name,
             PositionId = Guid.NewGuid(),
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,

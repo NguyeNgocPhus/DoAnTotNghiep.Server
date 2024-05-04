@@ -47,7 +47,7 @@ public static class Url
             public static class User
             {
                 public const string Create = "User";
-                public const string Update = "User/{id}"; 
+                public const string Update = "User"; 
                 public const string Delete = "User/{id}"; 
                 public const string ViewList = "Users"; 
                 public const string View = "User/{id}"; 

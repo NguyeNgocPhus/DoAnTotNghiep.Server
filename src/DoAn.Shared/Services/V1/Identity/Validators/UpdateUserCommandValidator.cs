@@ -16,10 +16,10 @@ namespace DoAn.Shared.Services.V1.Identity.Validators
                 .NotEmpty().EmailAddress();
             RuleFor(command => command.PhoneNumber)
                 .NotEmpty();
-            RuleFor(command => command.FirstName)
+            RuleFor(command => command.UserName)
                 .NotEmpty();
-            RuleFor(command => command.LastName)
-                .NotEmpty();
+            // RuleFor(command => command.LastName)
+            //     .NotEmpty();
 
         }
     }
