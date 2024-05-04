@@ -251,8 +251,8 @@ namespace DoAn.Shared.Abstractions.Shared
         public static class Pagination
         {
             public const int DefaultPage = 1;
-            public const int DefaultSize = 30;
-            public const bool DefaultOrderByDesc = false;
+            public const int DefaultSize = 10;
+            public const bool DefaultOrderByDesc = true;
             public const int DefaultCurrentPage = 0;
             public const int DefaultTotalPages = 0;
             public const int DefaultTotalItems = 0;
