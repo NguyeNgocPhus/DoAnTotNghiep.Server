@@ -24,7 +24,20 @@ public class IdentityController : ApiControllerBase
         }
         return Ok(result.Value);
     }
-    
+
+    [HttpPost]
+    [Route(Common.Url.ADMIN.Identity.Logout)]
+    public async Task<ActionResult> Logout([FromBody] LogoutCommand request,CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+
+        }
+        return Ok(result);
+
+    }
+
     [HttpGet]
     [Route(Common.Url.ADMIN.Identity.User.ViewList)]
     public async Task<ActionResult> GetListUser(CancellationToken cancellationToken)
