@@ -28,7 +28,7 @@ namespace DoAn.Application.UseCases.V1.Commands.Identity
         }
         public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
-            var existUser = await _userManager.FindByIdAsync(request.Id);
+            var existUser = await _userManager.FindByIdAsync(request.Id.ToString());
             if (existUser == null)
             {
                 throw new DuplicateUserException("Not find user");

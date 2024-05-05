@@ -74,7 +74,6 @@ namespace DoAn.Application.UseCases.V1.Commands.Identity
                 throw new DuplicateUserException(string.Join(",", userResult.Errors.Select(x => x.Description)));
             }
             
-            
 
             var result = _mapper.Map<UserResponse>(command);
             return Result.Success(result);

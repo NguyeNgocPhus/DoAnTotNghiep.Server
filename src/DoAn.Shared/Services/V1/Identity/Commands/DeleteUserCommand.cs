@@ -10,6 +10,6 @@ namespace DoAn.Shared.Services.V1.Identity.Commands
 {
     public class DeleteUserCommand : ICommand
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 }

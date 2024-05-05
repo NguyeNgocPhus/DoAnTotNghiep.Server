@@ -91,9 +91,13 @@ public class IdentityController : ApiControllerBase
 
     [HttpDelete]
     [Route(Common.Url.ADMIN.Identity.User.Delete)]
-    public async Task<ActionResult> DeleteUser([FromBody] DeleteUserCommand request, CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(request, cancellationToken);
+        var result = await _mediator.Send(new DeleteUserCommand()
+        {
+            Id = id
+        }, cancellationToken);
+        
         if (!result.IsSuccess)
         {
 
