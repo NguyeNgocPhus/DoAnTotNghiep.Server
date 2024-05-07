@@ -15,12 +15,14 @@ public class UploadFileCommandHandler : ICommandHandler<UploadFileCommand, FileS
     private readonly IRepositoryBase<FileStorage, Guid> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UploadFileCommandHandler(IRepositoryBase<FileStorage, Guid> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    public UploadFileCommandHandler(IRepositoryBase<FileStorage, Guid> repository, IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<FileStorageResponse>> Handle(UploadFileCommand request, CancellationToken cancellationToken)
@@ -34,7 +36,7 @@ public class UploadFileCommandHandler : ICommandHandler<UploadFileCommand, FileS
             Size = (long) request.Length,
             Status = "",
             MimeType = request.MimeType,
-            CreatedBy = Guid.NewGuid(),
+            CreatedBy = Guid.Parse(_currentUserService.UserId),
             CreatedTime = DateTime.Now,
         };
         _repository.Add(entry);

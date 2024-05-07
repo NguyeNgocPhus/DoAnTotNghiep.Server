@@ -1,8 +1,13 @@
+using DoAn.Application.Abstractions;
+using DoAn.Application.Abstractions.Repositories;
 using DoAn.Application.DTOs.Workflow;
+using DoAn.Domain.Entities;
+using Elsa;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
 using Elsa.Expressions;
+using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
@@ -17,10 +22,17 @@ namespace DoAn.Infrastructure.Workflow.Activities.Triggers;
 public class FileUpload : Activity
 {
     private readonly IWorkflowDefinitionStore _workflowDefinition;
+    private readonly IRepositoryBase<ActionLogs, Guid> _actionLogsRepository;
+    private readonly IRepositoryBase<FileStorage, Guid> _fileRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public FileUpload(IWorkflowDefinitionStore workflowDefinition)
+
+    public FileUpload(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ActionLogs, Guid> actionLogsRepository, IRepositoryBase<FileStorage, Guid> fileRepository, IUnitOfWork unitOfWork)
     {
         _workflowDefinition = workflowDefinition;
+        _actionLogsRepository = actionLogsRepository;
+        _fileRepository = fileRepository;
+        _unitOfWork = unitOfWork;
     }
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
@@ -54,9 +66,29 @@ public class FileUpload : Activity
     {
         try
         {
+           
             var input = context.GetInput<ExecuteFileUpdateDto>();
+            var fileDetail = await _fileRepository.FindSingleAsync(x => x.Id == input.FileId);
+            
+            // get wf definition by definition id
+            var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(context.WorkflowInstance.DefinitionId, VersionOptions.Latest, cancellationToken: context.CancellationToken);
+            if (workflowDefinition == null)
+                throw new Exception("Workflow Definition not found");
             
             context.WorkflowExecutionContext.ContextId = input.FileId.ToString();
+            var actionLog = new ActionLogs()
+            {
+                ActivityId = context.ActivityId,
+                ActivityName = nameof(FileUpload),
+                CreatedBy = fileDetail.CreatedBy,
+                CreatedTime = DateTime.Now,
+                ContextId = fileDetail.Id,
+                WorkflowInstanceId = context.WorkflowInstance.Id,
+                WorkflowDefinitionId = workflowDefinition.Id,
+                ActionReason = string.Empty
+            };
+            _actionLogsRepository.Add(actionLog);
+            await _unitOfWork.SaveChangesAsync();
             
             return Done();
         }

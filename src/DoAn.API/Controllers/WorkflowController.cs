@@ -32,9 +32,37 @@ public class WorkflowController : ApiControllerBase
     }
 
     [HttpGet]
-    // [Authorize("AtLeast21")]
     [Route(Common.Url.ADMIN.Workflow.GetCurrentStepWorkflow)]
     public async Task<ActionResult> GetCurrentStepWorkflow(Guid fileId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetCurrentStepWorkflowInstanceQuery()
+        {
+            FileId = fileId
+        }, cancellationToken);
+        if (!result.IsSuccess)
+        {
+        }
+
+        return Ok(result);
+    }
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Workflow.GetWorkflowActivity)]
+    public async Task<ActionResult> GetWorkflowActivity(Guid fileId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetWorkflowActivityQuery()
+        {
+            FileId = fileId
+        }, cancellationToken);
+        if (!result.IsSuccess)
+        {
+        }
+
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [Route(Common.Url.ADMIN.Workflow.GetWorkflowHistory)]
+    public async Task<ActionResult> GetWorkflowHistory(Guid fileId, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetCurrentStepWorkflowInstanceQuery()
         {

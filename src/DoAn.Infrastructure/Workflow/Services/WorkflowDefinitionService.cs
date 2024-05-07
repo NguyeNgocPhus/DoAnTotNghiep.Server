@@ -1,6 +1,8 @@
 using AutoMapper;
 using DoAn.Application.Abstractions;
+using DoAn.Application.Abstractions.Repositories;
 using DoAn.Application.Exceptions;
+using DoAn.Domain.Entities;
 using DoAn.Infrastructure.Workflow.Specifications;
 using DoAn.Shared.Services.V1.Workflow.Commands;
 using DoAn.Shared.Services.V1.Workflow.Responses;
@@ -18,17 +20,22 @@ namespace DoAn.Infrastructure.Workflow.Services;
 public class WorkflowDefinitionService : IWorkflowDefinitionService
 {
     private readonly IWorkflowDefinitionStore _workflowDefinitionStore;
+    private readonly IWorkflowInstanceStore _workflowInstance;
     private readonly IWorkflowPublisher _workflowPublisher;
     private readonly IMapper _mapper;
+    private readonly IActionLogRepository _actionLogRepository;
     private readonly IPublisher _publisher;
-    
 
-    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper, IPublisher publisher, IWorkflowPublisher workflowPublisher)
+
+    public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper,
+        IPublisher publisher, IWorkflowPublisher workflowPublisher, IWorkflowInstanceStore workflowInstance, IActionLogRepository actionLogRepository)
     {
         _workflowDefinitionStore = workflowDefinitionStore;
         _mapper = mapper;
         _publisher = publisher;
         _workflowPublisher = workflowPublisher;
+        _workflowInstance = workflowInstance;
+        _actionLogRepository = actionLogRepository;
     }
 
     public async Task<CreateWorkflowResponse> CreateWorkflowDefinitionAsync(CreateWorkflowDefinitionCommand data,
@@ -95,10 +102,10 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         }).ToList();
 
         await _workflowDefinitionStore.UpdateAsync(wfDefinition, cancellationToken);
-        
+
         await _publisher.Publish(new WorkflowDefinitionPublished(wfDefinition), cancellationToken);
         await _publisher.Publish(new WorkflowDefinitionSaved(wfDefinition), cancellationToken);
-        
+
         return _mapper.Map<UpdateWorkflowDefinitionResponse>(data);
     }
 
@@ -113,18 +120,82 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
     public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(
         CancellationToken cancellationToken = default)
     {
-        var worklows = await _workflowDefinitionStore.FindManyAsync(new GetWfDefinitionByLatestVersionSpecification(true),
+        var worklows = await _workflowDefinitionStore.FindManyAsync(
+            new GetWfDefinitionByLatestVersionSpecification(true),
             cancellationToken: cancellationToken).ToList();
 
 
         return _mapper.Map<List<WorkflowDefinitionResponse>>(worklows);
     }
 
-    public async Task<WorkflowDefinitionResponse> GetWorkflowDefinitionAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<WorkflowDefinitionResponse> GetWorkflowDefinitionAsync(string id,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _workflowDefinitionStore.FindByDefinitionIdAsync( id,VersionOptions.Latest, cancellationToken);
+        var result =
+            await _workflowDefinitionStore.FindByDefinitionIdAsync(id, VersionOptions.Latest, cancellationToken);
         if (result == null)
             throw new WorkflowDefinitionNotFoundException("\"workflow definition not found\"");
         return _mapper.Map<WorkflowDefinitionResponse>(result);
-    }   
+    }
+
+    public async Task<object> GetWorkflowActivityAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        var workflowInstance =
+            await _workflowInstance.FindAsync(new WorkflowInstanceContextIdSpecification(fileId.ToString()),
+                cancellationToken);
+
+        var workflowDefinition = await _workflowDefinitionStore.FindByDefinitionIdAsync(workflowInstance.DefinitionId,
+            VersionOptions.SpecificVersion(workflowInstance.Version), cancellationToken: cancellationToken);
+
+        // if root activity 
+        var rootActivity = workflowDefinition.Connections.First(x =>
+            workflowDefinition.Connections.FirstOrDefault(y => y.TargetActivityId == x.SourceActivityId) == null);
+
+
+        int node = 1;
+        List<KeyValuePair<int, ActivityDefinition>> dictionary = new List<KeyValuePair<int, ActivityDefinition>>();
+
+        var activity =
+            workflowDefinition.Activities.FirstOrDefault(x => x.ActivityId == rootActivity.SourceActivityId);
+        dictionary.Add(new KeyValuePair<int, ActivityDefinition>(node, activity));
+
+
+        // create workflow tree 
+        GenerateWorkflowTree(rootActivity.TargetActivityId, node + 1);
+
+        void GenerateWorkflowTree(string targetActivityId, int node)
+        {
+            var connections = workflowDefinition?.Connections.Where(x => x.SourceActivityId == targetActivityId);
+            if (connections.Count() == 0)
+            {
+                return;
+            }
+            else
+            {
+                foreach (var connect in connections)
+                {
+                    var activity =
+                        workflowDefinition?.Activities.FirstOrDefault(x =>
+                            x.ActivityId == connect.SourceActivityId);
+                    if (activity != null && activity.Type != "Branch" && activity.Type != "Condition" &&
+                        activity.Type != "Join" && activity.Type != "SendEmail")
+                    {
+                        dictionary.Add(new KeyValuePair<int, ActivityDefinition>(node, activity));
+                    }
+
+                    GenerateWorkflowTree(connect.TargetActivityId, node + 1);
+                }
+            }
+        }
+
+        var activities = dictionary.GroupBy(x => x.Key, (key, g) => g.ToList().Select(i => i.Value));
+
+
+        var actionLogs = await _actionLogRepository.GetActionLog(fileId, cancellationToken);
+
+        return new {
+            activities,
+            actionLogs
+        };
+    }
 }

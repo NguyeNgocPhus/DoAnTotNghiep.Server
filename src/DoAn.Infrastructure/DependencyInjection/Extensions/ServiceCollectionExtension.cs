@@ -55,10 +55,11 @@ public static class ServiceCollectionExtension
                 .AddActivity<Condition>()
                 .AddActivity<Branch>()
                 .AddActivity<SendEmail>()
+                .AddActivity<Finish>()
                 .AddQuartzTemporalActivities()
                 .AddHttpActivities(elsaSection.GetSection("Server").Bind)
                 .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(connectionString))
-                               .NoCoreActivities()
+                        .NoCoreActivities()
             
             // .AddCustomTenantAccessor<CustomTenantAccessor>()
         );

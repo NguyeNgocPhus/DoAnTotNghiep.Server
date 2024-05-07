@@ -8,7 +8,7 @@ namespace DoAn.Persistence.Repositories;
 public class RepositoryBase<TEntity, TKey> : IRepositoryBase<TEntity, TKey>, IDisposable
         where TEntity : Entity<TKey>
 {
-    private readonly ApplicationDbContext _dbContext;
+    protected readonly ApplicationDbContext _dbContext;
 
     public RepositoryBase(ApplicationDbContext dbContext)
         => _dbContext = dbContext;
