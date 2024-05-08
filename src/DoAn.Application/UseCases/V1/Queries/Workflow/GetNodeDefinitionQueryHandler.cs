@@ -22,7 +22,7 @@ public class GetNodeDefinitionQueryHandler : IQueryHandler<GetNodeDefinitionQuer
     {
         var result =
             await _workflowDefinitionService.GetWorkflowDefinitionAsync(request.DefinitionId, cancellationToken);
-        var activity = result.Activities.FirstOrDefault(x => x.Type == request.Type);
+        var activity = result.Activities.FirstOrDefault(x => x.ActivityId == request.ActivityId);
         if (activity == null)
         {
             return Result.Success(new NodeDefinitionResponse());

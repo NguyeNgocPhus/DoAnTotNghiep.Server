@@ -165,12 +165,13 @@ public class WorkflowController : ApiControllerBase
 
     [HttpGet]
     [Route(Common.Url.ADMIN.Workflow.ViewNode)]
-    public async Task<ActionResult> ViewNodeDetail(string id, string type, CancellationToken cancellationToken)
+    public async Task<ActionResult> ViewNodeDetail(string id, string type,[FromQuery] string activityId, CancellationToken cancellationToken)
     {
         var query = new GetNodeDefinitionQuery()
         {
             DefinitionId = id,
-            Type = type
+            Type = type,
+            ActivityId = activityId
         };
         var result = await _mediator.Send(query, cancellationToken);
         if (!result.IsSuccess)
