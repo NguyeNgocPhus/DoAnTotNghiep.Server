@@ -17,7 +17,7 @@ public class GetListWorkflowDefinitionQueryHandler : IQueryHandler<GetListWorkfl
 
     public async Task<Result<List<WorkflowDefinitionResponse>>> Handle(GetListWorkflowDefinitionQuery request, CancellationToken cancellationToken)
     {
-        var result = await _workflowDefinitionService.GetListWorkflowDefinitionAsync(cancellationToken);
-        return Result.Success(result);
+        var result = await _workflowDefinitionService.GetListWorkflowDefinitionAsync(request, cancellationToken);
+        return Result.Success(result) ;
     }
 }

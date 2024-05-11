@@ -5,7 +5,10 @@ using DoAn.Application.Exceptions;
 using DoAn.Domain.Entities;
 using DoAn.Domain.Entities.Identity;
 using DoAn.Infrastructure.Workflow.Specifications;
+using DoAn.Shared.Abstractions.Shared;
+using DoAn.Shared.Services.V1.ImportHistory.Responses;
 using DoAn.Shared.Services.V1.Workflow.Commands;
+using DoAn.Shared.Services.V1.Workflow.Queries;
 using DoAn.Shared.Services.V1.Workflow.Responses;
 using Elsa;
 using Elsa.Events;
@@ -18,6 +21,7 @@ using Namotion.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Open.Linq.AsyncExtensions;
+using Result = DoAn.Shared.Abstractions.Shared.Result;
 
 namespace DoAn.Infrastructure.Workflow.Services;
 
@@ -79,8 +83,8 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         {
             throw new WorkflowDefinitionNotFoundException("workflow definition not found");
         }
-
-        wfDefinition.Description = data.Description;
+        
+        // wfDefinition.Description = data.Description;
         wfDefinition.Name = data.Name;
         wfDefinition.IsPublished = true;
         wfDefinition.Activities = data.Activities.Select(x => new ActivityDefinition()
@@ -123,15 +127,15 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         return data.DefinitionId;
     }
 
-    public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync(
+    public async Task<List<WorkflowDefinitionResponse>> GetListWorkflowDefinitionAsync( GetListWorkflowDefinitionQuery request,
         CancellationToken cancellationToken = default)
     {
         var worklows = await _workflowDefinitionStore.FindManyAsync(
             new GetWfDefinitionByLatestVersionSpecification(true),
             cancellationToken: cancellationToken).ToList();
-
-
-        return _mapper.Map<List<WorkflowDefinitionResponse>>(worklows);
+        var data = _mapper.Map<List<WorkflowDefinitionResponse>>(worklows);
+        
+        return data;
     }
 
     public async Task<WorkflowDefinitionResponse> GetWorkflowDefinitionAsync(string id,

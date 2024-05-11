@@ -57,7 +57,7 @@ public class FileStorageController : ApiControllerBase
         }
         var response = new FileContentResult(result.Value.Data, result.Value.MimeType)
         {
-            FileDownloadName = $"{name}{result.Value.Name.GetFileExtension()}",
+            FileDownloadName = $"{name}",
             EnableRangeProcessing = true
         };
         return response;

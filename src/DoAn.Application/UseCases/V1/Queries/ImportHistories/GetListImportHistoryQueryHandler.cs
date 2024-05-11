@@ -16,13 +16,14 @@ namespace DoAn.Application.UseCases.V1.Queries.ImportHistories;
 public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHistoryQuery, PagedResult<ImportHistoryResponse>>
 {
     private readonly IRepositoryBase<ImportHistory, Guid> _repository;
-
+    private readonly IRepositoryBase<FileStorage, Guid> _fileStorateRepository;
     private readonly IMapper _mapper;
 
-    public GetListImportHistoryQueryHandler(IRepositoryBase<ImportHistory, Guid> repository, IMapper mapper)
+    public GetListImportHistoryQueryHandler(IRepositoryBase<ImportHistory, Guid> repository, IMapper mapper, IRepositoryBase<FileStorage, Guid> fileStorateRepository)
     {
         _repository = repository;
         _mapper = mapper;
+        _fileStorateRepository = fileStorateRepository;
     }
 
     public async Task<Result<PagedResult<ImportHistoryResponse>>> Handle(GetListImportHistoryQuery request,
@@ -42,11 +43,15 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
                 ImportTemplateName = x.ImportTemplate.Name,
                 FileId = x.FileId,
                 CreatedBy = x.CreatedBy,
-                CreatedByName = x.User.UserName ?? string.Empty
+                CreatedByName = x.User.UserName ?? string.Empty,
+                FileName = (from f in _fileStorateRepository.AsQueryable()
+                            where f.Id == x.FileId
+                            select f.OriginalName).First()
+                
             });
-        if (request.ImportTemplateId != null)
+        if (request.ImportTemplateIds.Count>0)
         {
-            query = query.Where(x => x.ImportTemplateId == request.ImportTemplateId);
+            query = query.Where(x => request.ImportTemplateIds.Contains(x.ImportTemplateId));
         }
 
         if (request.Status.Count > 0)

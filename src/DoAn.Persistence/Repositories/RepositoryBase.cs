@@ -30,6 +30,11 @@ public class RepositoryBase<TEntity, TKey> : IRepositoryBase<TEntity, TKey>, IDi
         return items;
     }
 
+    public IQueryable<TEntity> AsQueryable()
+    {
+        return _dbContext.Set<TEntity>().AsQueryable();
+    }
+
     public async Task<TEntity> FindByIdAsync(TKey id, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includeProperties)
         => await FindAll(null, includeProperties)
         .AsTracking()

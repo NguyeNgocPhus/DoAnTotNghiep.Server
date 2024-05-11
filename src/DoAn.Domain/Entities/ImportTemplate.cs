@@ -14,6 +14,7 @@ namespace DoAn.Domain.Entities
         public int DisplayOrder { get; set; }
         public Guid FileTemplateId { get; set; }
         public virtual ICollection<ImportHistory> ImportHistories { get; set; } = null!;
+        
 
     }
 }

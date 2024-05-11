@@ -25,7 +25,7 @@ public class
     public async Task<Result<PagedResult<ImportTemplateResponse>>> Handle(GetListImportTemplateQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _repository.FindAll().ProjectTo<ImportTemplateResponse>(_mapper.ConfigurationProvider)
+        var query = _repository.GetImportTemplates(cancellationToken)
             .Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrEmpty(request.Name))
