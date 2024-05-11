@@ -33,9 +33,21 @@ public class GetListUserQueryHandler : IQueryHandler<GetListUserQuery, PagedResu
     {
         var query = _userRepository.GetUsersAsync();
 
-        if (request.Keyword != null)
+        if (!string.IsNullOrEmpty(request.Email))
         {
-            query = query.Where(x => x.UserName.Contains(request.Keyword) || x.Email.Contains(request.Keyword));
+            query = query.Where(x => x.Email.Contains(request.Email));
+        }
+        if (!string.IsNullOrEmpty(request.Name ))
+        {
+            query = query.Where(x => x.UserName.Contains(request.Name));
+        }
+        if (!string.IsNullOrEmpty(request.PhoneNumber ))
+        {
+            query = query.Where(x => x.PhoneNumber.Contains(request.PhoneNumber));
+        }
+        if (request.Roles.Count > 0)
+        {
+            query = query.Where(x => x.Roles.Any(r=>request.Roles.Contains(r)));
         }
 
         query = request.OrderByDesc

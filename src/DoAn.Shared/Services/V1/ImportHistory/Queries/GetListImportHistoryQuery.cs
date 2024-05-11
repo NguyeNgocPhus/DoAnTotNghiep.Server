@@ -8,5 +8,6 @@ namespace DoAn.Shared.Services.V1.ImportHistory.Queries;
 public class GetListImportHistoryQuery : PaginationBaseRequest ,IQuery<PagedResult<ImportHistoryResponse>>
 {
     public Guid? ImportTemplateId { get; set; }
-    public string? Status { get; set; }  
+    public List<string> Status { get; set; } = [];
+    public string? CreatedByName { get; set; }
 }

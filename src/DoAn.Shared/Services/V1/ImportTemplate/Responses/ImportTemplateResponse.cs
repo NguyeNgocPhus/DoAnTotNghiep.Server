@@ -12,5 +12,7 @@ public class ImportTemplateResponse
     public string? WorkflowDefinitionId { get; set; }
     public int DisplayOrder { get; set; }
     public Guid FileTemplateId { get; set; }
+    public DateTime CreatedTime { get; set; }
+    public bool IsDeleted { get; set; }
 
 }

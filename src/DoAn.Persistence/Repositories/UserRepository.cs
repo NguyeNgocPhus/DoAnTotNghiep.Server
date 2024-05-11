@@ -47,7 +47,7 @@ public class UserRepository : IUserRepository
                     Roles = (from ur in _db.UserRoles.AsQueryable()
                         join r in _db.Roles.AsQueryable() on ur.RoleId equals r.Id
                         where ur.UserId == u.Id
-                        select r.Name).ToList()
+                        select r.RoleCode).ToList()
                 }
             );
         return await query.FirstOrDefaultAsync(cancellationToken);
@@ -60,6 +60,18 @@ public class UserRepository : IUserRepository
 
 
         return await _db.SaveChangesAsync(cancellationToken) > 0;
+    }
+    public async Task<List<string>> GetRoleCodeByUser(Guid id, CancellationToken cancellationToken)
+    {
+        var queryable = from ur in _db.UserRoles.AsQueryable()
+            join r in _db.AppRoles.AsQueryable() on ur.RoleId equals r.Id 
+            
+            where ur.UserId == id
+            select r.RoleCode ;
+
+        var userRoles = await queryable.ToListAsync(cancellationToken);
+
+        return userRoles;
     }
 
     public async Task<List<string>> GetRoleIdsInUser(Guid id, CancellationToken cancellationToken)

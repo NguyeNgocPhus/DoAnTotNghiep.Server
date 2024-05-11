@@ -82,11 +82,9 @@ public class ImportTemplateController : ApiControllerBase
     }
     [HttpGet]
     [Route(Common.Url.ADMIN.ImportTemplate.ViewList)]
-    public async Task<ActionResult> GetList( CancellationToken cancellationToken)
+    public async Task<ActionResult> GetList([FromQuery] GetListImportTemplateQuery query, CancellationToken cancellationToken)
     {
-        var query = new GetListImportTemplateQuery()
-        {
-        };
+       
         var result = await _mediator.Send(query, cancellationToken);
         if (!result.IsSuccess)
         {

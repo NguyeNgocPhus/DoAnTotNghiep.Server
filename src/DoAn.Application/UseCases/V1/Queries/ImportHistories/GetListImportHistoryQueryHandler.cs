@@ -42,18 +42,23 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
                 ImportTemplateName = x.ImportTemplate.Name,
                 FileId = x.FileId,
                 CreatedBy = x.CreatedBy,
-                CreatedByName = x.User.UserName
+                CreatedByName = x.User.UserName ?? string.Empty
             });
         if (request.ImportTemplateId != null)
         {
             query = query.Where(x => x.ImportTemplateId == request.ImportTemplateId);
         }
 
-        if (request.Status != null)
+        if (request.Status.Count > 0)
         {
-            query = query.Where(x => x.Status == request.Status);
+            query = query.Where(x => request.Status.Contains(x.Status) );
         }
         
+        if (!string.IsNullOrEmpty(request.CreatedByName))
+        {
+            query = query.Where(x => x.CreatedByName.Contains(request.CreatedByName));
+        }
+
         
         
         query = request.OrderByDesc
