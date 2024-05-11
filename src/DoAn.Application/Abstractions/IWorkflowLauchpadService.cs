@@ -7,5 +7,5 @@ namespace DoAn.Application.Abstractions;
 public interface IWorkflowLaunchpadService
 {
     Task<IEnumerable<CollectedWorkflow>> StartWorkflowsAsync( ExecuteFileUpdateDto data, CancellationToken cancellationToken = default);
-    Task<bool> ResumeWorkflowsAsync( ExecuteWorkflowCommand data, CancellationToken cancellationToken = default);
+    Task<object> ResumeWorkflowsAsync( ExecuteWorkflowCommand data, CancellationToken cancellationToken = default);
 }

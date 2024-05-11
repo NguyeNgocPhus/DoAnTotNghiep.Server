@@ -3,6 +3,7 @@ using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Application.Exceptions;
 using DoAn.Domain.Entities;
+using DoAn.Domain.Entities.Identity;
 using DoAn.Infrastructure.Workflow.Specifications;
 using DoAn.Shared.Services.V1.Workflow.Commands;
 using DoAn.Shared.Services.V1.Workflow.Responses;
@@ -12,7 +13,10 @@ using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Namotion.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Open.Linq.AsyncExtensions;
 
 namespace DoAn.Infrastructure.Workflow.Services;
@@ -25,10 +29,11 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
     private readonly IMapper _mapper;
     private readonly IActionLogRepository _actionLogRepository;
     private readonly IPublisher _publisher;
+    private readonly RoleManager<AppRole> _roleManager;
 
 
     public WorkflowDefinitionService(IWorkflowDefinitionStore workflowDefinitionStore, IMapper mapper,
-        IPublisher publisher, IWorkflowPublisher workflowPublisher, IWorkflowInstanceStore workflowInstance, IActionLogRepository actionLogRepository)
+        IPublisher publisher, IWorkflowPublisher workflowPublisher, IWorkflowInstanceStore workflowInstance, IActionLogRepository actionLogRepository, RoleManager<AppRole> roleManager)
     {
         _workflowDefinitionStore = workflowDefinitionStore;
         _mapper = mapper;
@@ -36,6 +41,7 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
         _workflowPublisher = workflowPublisher;
         _workflowInstance = workflowInstance;
         _actionLogRepository = actionLogRepository;
+        _roleManager = roleManager;
     }
 
     public async Task<CreateWorkflowResponse> CreateWorkflowDefinitionAsync(CreateWorkflowDefinitionCommand data,
@@ -161,9 +167,9 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
 
 
         // create workflow tree 
-        GenerateWorkflowTree(rootActivity.TargetActivityId, node + 1);
+         GenerateWorkflowTree(rootActivity.TargetActivityId, node + 1);
 
-        void GenerateWorkflowTree(string targetActivityId, int node)
+        async void GenerateWorkflowTree(string targetActivityId, int node)
         {
             var connections = workflowDefinition?.Connections.Where(x => x.SourceActivityId == targetActivityId);
             if (connections.Count() == 0)
@@ -180,6 +186,16 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
                     if (activity != null && activity.Type != "Branch" && activity.Type != "Condition" &&
                         activity.Type != "Join" && activity.Type != "SendEmail")
                     {
+                        if (activity.Type is "Approve" or "Reject")
+                        {
+                            var properties = activity.Properties.FirstOrDefault(x => x.Name == "Data");
+                            var value = properties.Expressions.FirstOrDefault(x=>x.Key=="Literal").Value;
+                            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(value);
+                            var roleId = obj["roleId"].ToString();
+                            var role =  _roleManager.FindByIdAsync(roleId).Result;
+                            activity.Description = $"Chờ {role.Name} phê duyệt";
+                        }
+                        
                         dictionary.Add(new KeyValuePair<int, ActivityDefinition>(node, activity));
                     }
 

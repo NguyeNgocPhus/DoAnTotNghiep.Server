@@ -8,6 +8,7 @@ public class CurrentStepWorkflowResponse
 
 public class CurrentActivity
 {
+    public string Type { get; set; }
     public string Signal { get; set; }
     public string ActivityId { get; set; }
 }

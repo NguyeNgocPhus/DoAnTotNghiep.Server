@@ -44,6 +44,17 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
                 CreatedBy = x.CreatedBy,
                 CreatedByName = x.User.UserName
             });
+        if (request.ImportTemplateId != null)
+        {
+            query = query.Where(x => x.ImportTemplateId == request.ImportTemplateId);
+        }
+
+        if (request.Status != null)
+        {
+            query = query.Where(x => x.Status == request.Status);
+        }
+        
+        
         
         query = request.OrderByDesc
             ? query.OrderByDescending(GetSortProperty(request))

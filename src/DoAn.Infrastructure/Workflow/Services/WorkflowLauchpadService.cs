@@ -12,6 +12,7 @@ using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Open.Linq.AsyncExtensions;
 
@@ -23,12 +24,14 @@ public class WorkflowLaunchpadService : IWorkflowLaunchpadService
     private readonly IWorkflowInstanceStore _workflowInstance;
     private readonly IWorkflowDefinitionStore _workflowDefinition;
     private readonly IRepositoryBase<FileStorage, Guid> _repository;
-    public WorkflowLaunchpadService(IWorkflowLaunchpad workflowLaunchpad, IWorkflowInstanceStore workflowInstance, IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<FileStorage, Guid> repository)
+    private readonly IRepositoryBase<ImportHistory, Guid> _importHistory;
+    public WorkflowLaunchpadService(IWorkflowLaunchpad workflowLaunchpad, IWorkflowInstanceStore workflowInstance, IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<FileStorage, Guid> repository, IRepositoryBase<ImportHistory, Guid> importHistory)
     {
         _workflowLaunchpad = workflowLaunchpad;
         _workflowInstance = workflowInstance;
         _workflowDefinition = workflowDefinition;
         _repository = repository;
+        _importHistory = importHistory;
     }
 
     public async Task<IEnumerable<CollectedWorkflow>> StartWorkflowsAsync(ExecuteFileUpdateDto data,
@@ -50,25 +53,38 @@ public class WorkflowLaunchpadService : IWorkflowLaunchpadService
         return filteredWorkflows;
     }
 
-    public async Task<bool> ResumeWorkflowsAsync(ExecuteWorkflowCommand data, CancellationToken cancellationToken = default)
+    public async Task<object> ResumeWorkflowsAsync(ExecuteWorkflowCommand data, CancellationToken cancellationToken = default)
     {
         var workflowInstance = await _workflowInstance.FindByIdAsync(data.WorkflowInstanceId, cancellationToken) ??
                                throw new WorkflowInstanceNotFoundException("wf instance is null");
+        
         if (workflowInstance.BlockingActivities.FirstOrDefault(x => x.ActivityId == data.ActivityId) == null)
         {
-           
             throw new Exception("Không thể phê duyệt");
         }
         // //kiểm tra current user có được phân quyền dữ liệu với đơn vị hay không.
-        // var importHistory =
-        //     await _repository.FindSingleAsync(x => x.Id ==  Guid.Parse(workflowInstance.ContextId), cancellationToken);
-        // if (importHistory == null)
-        // {
-        //     throw new Exception("Dữ liệu phê duyệt không hợp lệ");
-        // }
-        var result = await _workflowLaunchpad.ExecutePendingWorkflowAsync(data.WorkflowInstanceId,
-            data.ActivityId, new WorkflowInput(new Signal(data.Signal)), cancellationToken);
+        var importHistory =
+            await _importHistory.FindAll(x => x.FileId == Guid.Parse(workflowInstance.ContextId)).FirstOrDefaultAsync(cancellationToken);
         
-        return result.Executed;
+        var activityShouldBeDelete =
+            workflowInstance.BlockingActivities.Where(x => x.ActivityId != data.ActivityId).ToList();
+        
+        var result = await _workflowLaunchpad.ExecutePendingWorkflowAsync(data.WorkflowInstanceId,
+            data.ActivityId, new WorkflowInput(new Signal(data.Signal, data.RejectReason)), cancellationToken);
+
+        //nếu phê duyệt thì không được từ chối và ngược lại
+        if (result.Executed)
+        {
+            var newWorkflowInstance =
+                await _workflowInstance.FindByIdAsync(data.WorkflowInstanceId, cancellationToken) ??
+                throw new Exception("wf instance is null");
+            newWorkflowInstance.BlockingActivities.RemoveWhere(x =>
+                activityShouldBeDelete.Select(xx => xx.ActivityId).Contains(x.ActivityId));
+            await _workflowInstance.UpdateAsync(newWorkflowInstance, cancellationToken);
+
+            await _workflowInstance.SaveAsync(newWorkflowInstance, cancellationToken);
+        }
+        
+        return data;
     }
 }

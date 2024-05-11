@@ -1,4 +1,7 @@
-﻿using Elsa.ActivityResults;
+﻿using DoAn.Application.Abstractions;
+using DoAn.Application.Abstractions.Repositories;
+using DoAn.Domain.Entities;
+using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
 using Elsa.Expressions;
@@ -19,12 +22,13 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions
     {
        
         private readonly IWorkflowDefinitionStore _workflowDefinition;
-
-        public Finish(IWorkflowDefinitionStore workflowDefinition)
+        private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        public Finish(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ImportHistory, Guid> importHistoryRepository, IUnitOfWork unitOfWork)
         {
-            
             _workflowDefinition = workflowDefinition;
-          
+            _importHistoryRepository = importHistoryRepository;
+            _unitOfWork = unitOfWork;
         }
 
         [ActivityInput(Hint = "The value to set as the workflow's output", SupportedSyntaxes = new[] { SyntaxNames.Literal, SyntaxNames.JavaScript, SyntaxNames.Liquid })]
@@ -79,7 +83,22 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions
                 {
                     // Clear all activities scheduled by the parent composite.
                     context.WorkflowExecutionContext.ClearScheduledActivities(parentBlueprint!.Id);
-                }
+                }  
+                var importHistory =
+                    await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
+            
+                if (importHistory == null)
+                    throw new Exception("Import hisotry is not found");
+
+                importHistory.Status = context.Input switch
+                {
+                    "APPROVE" => "APPROVE",
+                    "REJECT" => "REJECT",
+                    _ => importHistory.Status
+                };
+
+                await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+                
                 return Noop();
             }
             catch (Exception)

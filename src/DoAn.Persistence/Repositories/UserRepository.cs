@@ -16,7 +16,7 @@ public class UserRepository : IUserRepository
     public IQueryable<UserResponse> GetUsersAsync(CancellationToken cancellationToken)
     {
         var query = (from u in _db.AppUses.AsQueryable()
-                where !u.IsDirector && !u.IsDeleted
+                where  !u.IsDeleted
                 select new UserResponse()
                 {
                     Id = u.Id,
@@ -61,4 +61,13 @@ public class UserRepository : IUserRepository
 
         return await _db.SaveChangesAsync(cancellationToken) > 0;
     }
-}
+
+    public async Task<List<string>> GetRoleIdsInUser(Guid id, CancellationToken cancellationToken)
+    {
+        var query = from ur in _db.UserRoles.AsQueryable()
+            join r in _db.Roles.AsQueryable() on ur.RoleId equals r.Id
+            where ur.UserId == id
+            select r.Id.ToString().ToLower();
+        return await query.ToListAsync(cancellationToken);
+    }
+} 

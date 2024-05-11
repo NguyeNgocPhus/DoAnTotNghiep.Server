@@ -1,9 +1,13 @@
+using DoAn.Application.Abstractions;
+using DoAn.Application.Abstractions.Repositories;
+using DoAn.Domain.Entities;
 using Elsa;
 using Elsa.Activities.Signaling.Models;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
 using Elsa.Expressions;
+using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
@@ -20,14 +24,19 @@ public class Approve : Activity
 {
     private readonly IWorkflowExecutionLogStore _workflowExecutionLog;
     private readonly WorkflowExecutionLog _workflowExecution;
-
+    private readonly IRepositoryBase<ActionLogs, Guid> _actionLogRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IWorkflowDefinitionStore _workflowDefinition;
+    private readonly ICurrentUserService _currentUserService;
 
-    public Approve(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition)
+    public Approve(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition, ICurrentUserService currentUserService, IRepositoryBase<ActionLogs, Guid> actionLogRepository, IUnitOfWork unitOfWork)
     {
         _workflowExecutionLog = workflowExecutionLog;
 
         _workflowDefinition = workflowDefinition;
+        _currentUserService = currentUserService;
+        _actionLogRepository = actionLogRepository;
+        _unitOfWork = unitOfWork;
     }
 
     [ActivityOutput] public object? Output { get; set; }
@@ -63,7 +72,32 @@ public class Approve : Activity
     {
         try
         {
+           
+            var userId = _currentUserService.UserId;
+            var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
+                context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
+                cancellationToken: context.CancellationToken);
+            if (workflowDefinition == null)
+                throw new Exception("Approve activity: Workflow Definition not found");
+            var actionLog = new ActionLogs()
+            {
+                ActivityId = context.ActivityId,
+                ActivityName = nameof(Approve),
+                CreatedBy = Guid.Parse(userId),
+                CreatedTime = DateTime.Now,
+                ContextId = Guid.Parse(context.ContextId),
+                WorkflowInstanceId = context.WorkflowInstance.Id,
+                WorkflowDefinitionId = workflowDefinition.Id,
+                ActionReason = string.Empty
+            };
+
+            // add action log
+            _actionLogRepository.Add(actionLog);
+
+            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+            
             Output = "APPROVE";
+
             return Done();
         }
         catch (Exception)
