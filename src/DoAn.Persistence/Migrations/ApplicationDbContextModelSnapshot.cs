@@ -452,6 +452,89 @@ namespace DoAn.Persistence.Migrations
                     b.ToTable("ImportTemplate", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Domain.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Event")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("DoAn.Domain.Entities.NotificationEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationEvents", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Text = "Tài khaonr [UserName] vừa nhập dữ liệu cho mẫu [ImportTemplateName]",
+                            Title = "Dữ liệu báo cáo vừa được nhập",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Text = "Tài khoản [UserName] vừa phê duyệt dữ liệu nhập của bạn",
+                            Title = "Dữ liệu nhập được phê duyệt",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Text = "Tài khoản [UserName] đã từ chối dữ liệu nhập của bạn",
+                            Title = "Dữ liệu nhập bị từ chối",
+                            Type = 2
+                        });
+                });
+
             modelBuilder.Entity("DoAn.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")

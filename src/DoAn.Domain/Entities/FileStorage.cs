@@ -2,7 +2,7 @@ using DoAn.Domain.Abstractions;
 
 namespace DoAn.Domain.Entities;
 
-public class FileStorage: Entity<Guid>
+public class FileStorage: AuditableEntity<Guid>
 {
     public int Code { get; set; }
     public string Status { get; set; }

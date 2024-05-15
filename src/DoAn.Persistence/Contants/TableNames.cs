@@ -26,4 +26,6 @@ public static class TableNames
     internal const string ImportTemplate = nameof(ImportTemplate);
     internal const string ImportHistory = nameof(ImportHistory);
     internal const string FileStorages = nameof(FileStorages);
+    
+    internal const string NotificationEvents = nameof(NotificationEvents);
 }

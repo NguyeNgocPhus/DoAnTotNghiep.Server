@@ -2,6 +2,8 @@ using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Application.DTOs.Workflow;
 using DoAn.Domain.Entities;
+using DoAn.Domain.Entities.Identity;
+using DoAn.Infrastructure.Workflow.Activities.Actions;
 using Elsa;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
@@ -11,6 +13,9 @@ using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
+using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DoAn.Infrastructure.Workflow.Activities.Triggers;
 
@@ -24,15 +29,25 @@ public class FileUpload : Activity
     private readonly IWorkflowDefinitionStore _workflowDefinition;
     private readonly IRepositoryBase<ActionLogs, Guid> _actionLogsRepository;
     private readonly IRepositoryBase<FileStorage, Guid> _fileRepository;
+    private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notificationService;
+    private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly UserManager<AppUser> _userManager;
 
 
-    public FileUpload(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ActionLogs, Guid> actionLogsRepository, IRepositoryBase<FileStorage, Guid> fileRepository, IUnitOfWork unitOfWork)
+    public FileUpload(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ActionLogs, Guid> actionLogsRepository, IRepositoryBase<FileStorage, Guid> fileRepository, IUnitOfWork unitOfWork, INotificationService notificationService, IUserRepository userRepository, ICurrentUserService currentUserService, UserManager<AppUser> userManager, IRepositoryBase<ImportHistory, Guid> importHistoryRepository)
     {
         _workflowDefinition = workflowDefinition;
         _actionLogsRepository = actionLogsRepository;
         _fileRepository = fileRepository;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
+        _userRepository = userRepository;
+        _currentUserService = currentUserService;
+        _userManager = userManager;
+        _importHistoryRepository = importHistoryRepository;
     }
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
@@ -66,9 +81,13 @@ public class FileUpload : Activity
     {
         try
         {
-           
+
+            var userId = _currentUserService.UserId;
+            var user = await _userManager.FindByIdAsync(userId);
             var input = context.GetInput<ExecuteFileUpdateDto>();
             var fileDetail = await _fileRepository.FindSingleAsync(x => x.Id == input.FileId);
+
+            // var importHistory = _importHistoryRepository.FindSingleAsync(x => x.FileId == input.FileId);
             
             // get wf definition by definition id
             var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(context.WorkflowInstance.DefinitionId, VersionOptions.Latest, cancellationToken: context.CancellationToken);
@@ -90,6 +109,43 @@ public class FileUpload : Activity
             _actionLogsRepository.Add(actionLog);
             await _unitOfWork.SaveChangesAsync();
             
+            ///////////////////// Send notification to next step////////////////////////////////
+            // get to next activity
+            var nextActivities = new List<ActivityDefinition>();
+            GetNextActivities(context.ActivityId);
+            void GetNextActivities(string activityId)
+            {
+                if (nextActivities.Count > 0) return;
+                foreach (var connection in workflowDefinition.Connections)
+                {
+                    if (connection.SourceActivityId == activityId)
+                    {
+                        var activity = workflowDefinition.Activities.FirstOrDefault(x => x.ActivityId == connection.TargetActivityId);
+                        if (activity.Type == nameof(Approve) || activity.Type == nameof(Reject))
+                        {
+                            nextActivities.Add(activity);
+                        }
+                        GetNextActivities(connection.TargetActivityId);
+                    }
+                }
+            }
+            
+            // get role of next activity
+            var roles = nextActivities.Select(x => x.Properties.FirstOrDefault(xx => xx.Name == "Data").Expressions.FirstOrDefault().Value.Trim()).Distinct();
+
+            var value = JsonConvert.DeserializeObject<JObject>(roles.First());
+            var roleId = value?["roleId"].ToObject<Guid>()?? null;
+            if (roleId != null)
+            {
+                var users = await _userRepository.GetUserHasRole(roleId.Value, context.CancellationToken);
+
+                var fields = new Dictionary<string, string>()
+                {
+                         {"UserName",user.UserName},
+                         {"ImportTemplateName","Mẫu báo cáo tháng 3"}
+                };
+                await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Upload, fields);
+            }
             return Done();
         }
         catch (Exception ex)

@@ -3,6 +3,7 @@ using DoAn.Infrastructure.Authentication;
 using DoAn.Infrastructure.Authorization;
 using DoAn.Infrastructure.Caching.Services;
 using DoAn.Infrastructure.Mapper;
+using DoAn.Infrastructure.Notification.Services;
 using DoAn.Infrastructure.Workflow.Activities.Actions;
 using DoAn.Infrastructure.Workflow.Activities.Triggers;
 using DoAn.Infrastructure.Workflow.Providers;
@@ -29,6 +30,7 @@ public static class ServiceCollectionExtension
         services.AddAutoMapper(typeof(WorkflowProfile));
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<IAuthorizationHandler, MinimumAgeHandler>();
         return services;
     }

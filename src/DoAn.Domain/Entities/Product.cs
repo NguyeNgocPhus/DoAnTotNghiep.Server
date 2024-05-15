@@ -2,7 +2,7 @@ using DoAn.Domain.Abstractions;
 
 namespace DoAn.Domain.Entities;
 
-public class Product : Entity<Guid>
+public class Product : AuditableEntity<Guid>
 {
     public string Name { get; set; }
     public string Price { get; set; }

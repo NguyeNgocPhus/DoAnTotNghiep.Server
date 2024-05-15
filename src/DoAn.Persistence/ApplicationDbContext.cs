@@ -13,11 +13,17 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     {
     }
 
-    protected override void OnModelCreating(ModelBuilder builder) =>
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        
         builder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
+    }
+      
 
     public DbSet<AppUser> AppUses { get; set; }
     public DbSet<AppRole> AppRoles { get; set; }
+    public DbSet<NotificationEvent> NotificationEvents { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     public DbSet<ActionLogs> ActionLogs { get; set; }
     public DbSet<Action> Actions { get; set; }
     public DbSet<Function> Functions { get; set; }

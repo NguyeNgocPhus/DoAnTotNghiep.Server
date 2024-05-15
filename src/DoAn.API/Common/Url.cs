@@ -37,6 +37,12 @@ public static class Url
             public const string View = "ImportTemplate/{id}";
             public const string ViewList = "ImportTemplates";
         }
+        public static class Notification
+        {
+            
+            public const string ViewList = "Notifications";
+            public const string CountUnread = "Notifications/CountUnread";
+        }
         public static class ImportHistory
         {
             public const string ViewList = "ImportHistories";

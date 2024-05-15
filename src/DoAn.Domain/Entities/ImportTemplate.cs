@@ -3,7 +3,7 @@ using DoAn.Domain.Abstractions;
 namespace DoAn.Domain.Entities
 {    
    
-    public class ImportTemplate : Entity<Guid>
+    public class ImportTemplate : AuditableEntity<Guid>
     {       
         public string Name { get; set; }
         public string Tag { get; set; }

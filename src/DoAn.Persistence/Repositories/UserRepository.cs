@@ -13,6 +13,26 @@ public class UserRepository : IUserRepository
         _db = db;
     }
 
+    public async Task<IEnumerable<UserResponse>> GetUserHasRole(Guid roleId, CancellationToken cancellationToken = default)
+    {
+
+        var query = (from ur in _db.UserRoles.AsQueryable()
+                join u in _db.AppUses on ur.UserId equals u.Id into users
+                from user in users
+                where ur.RoleId == roleId
+                select new UserResponse()
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    UserName = user.UserName,
+                    
+                }
+            );
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public IQueryable<UserResponse> GetUsersAsync(CancellationToken cancellationToken)
     {
         var query = (from u in _db.AppUses.AsQueryable()

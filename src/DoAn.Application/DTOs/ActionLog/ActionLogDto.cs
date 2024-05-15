@@ -2,7 +2,7 @@ using DoAn.Domain.Abstractions;
 
 namespace DoAn.Application.DTOs.ActionLog;
 
-public class ActionLogDto : Entity<Guid>
+public class ActionLogDto : AuditableEntity<Guid>
 {
     public string WorkflowDefinitionId { get; set; }
 

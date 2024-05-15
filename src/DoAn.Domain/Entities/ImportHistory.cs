@@ -6,7 +6,7 @@ using DoAn.Domain.Entities.Identity;
 namespace DoAn.Domain.Entities
 {    
    
-    public class ImportHistory : Entity<Guid>
+    public class ImportHistory : AuditableEntity<Guid>
     {       
         public Guid? RoleProcessNextId { get; set; }
         public Guid ImportTemplateId { get; set; }

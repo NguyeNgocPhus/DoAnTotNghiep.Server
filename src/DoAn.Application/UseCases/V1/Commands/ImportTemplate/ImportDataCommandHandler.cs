@@ -18,7 +18,6 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
     private readonly IWorkflowLaunchpadService _workflowLaunchpadService;
-    
 
     public ImportDataCommandHandler(IRepositoryBase<FileStorage, Guid> fileStorageRepository,
         IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
