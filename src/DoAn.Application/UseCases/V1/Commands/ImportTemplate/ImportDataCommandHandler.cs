@@ -5,6 +5,7 @@ using DoAn.Application.Exceptions;
 using DoAn.Domain.Entities;
 using DoAn.Shared.Abstractions.Messages;
 using DoAn.Shared.Abstractions.Shared;
+using DoAn.Shared.Extensions;
 using DoAn.Shared.Services.V1.ImportTemplate.Commands;
 using FileNotFoundException = DoAn.Application.Exceptions.FileNotFoundException;
 
@@ -50,6 +51,7 @@ public class ImportDataCommandHandler : ICommandHandler<ImportDataCommand>
         var importHistory = new ImportHistory()
         {
             Id = Guid.NewGuid(),
+            Code = $"BC_{StringExtensions.RandomString(5)}" ,
             ImportTemplateId = importTemplate.Id,
             UserId = Guid.Parse(userId),
             CreatedBy = Guid.Parse(userId),

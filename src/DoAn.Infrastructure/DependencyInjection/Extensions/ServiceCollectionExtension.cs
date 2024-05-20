@@ -1,6 +1,7 @@
 using DoAn.Application.Abstractions;
 using DoAn.Infrastructure.Authentication;
 using DoAn.Infrastructure.Authorization;
+using DoAn.Infrastructure.BackgroundJobs;
 using DoAn.Infrastructure.Caching.Services;
 using DoAn.Infrastructure.Mapper;
 using DoAn.Infrastructure.Notification.Services;
@@ -19,6 +20,7 @@ using Elsa.Services.Workflows;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using Condition = DoAn.Infrastructure.Workflow.Activities.Actions.Condition;
 
 namespace DoAn.Infrastructure.DependencyInjection.Extensions;
@@ -33,6 +35,28 @@ public static class ServiceCollectionExtension
         services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<IAuthorizationHandler, MinimumAgeHandler>();
         return services;
+    }
+    // Configure Job
+    public static void AddQuartzInfrastructure(this IServiceCollection services)
+    {
+        services.AddQuartz(configure =>
+        {
+            var jobKey = new JobKey(nameof(NotificationBackgroundJobs));
+
+            configure
+                .AddJob<NotificationBackgroundJobs>(jobKey)
+                .AddTrigger(
+                    trigger =>
+                        trigger.ForJob(jobKey)
+                            .WithSimpleSchedule(
+                                schedule =>
+                                    schedule.WithInterval(TimeSpan.FromSeconds(5))
+                                        .RepeatForever()));
+
+            configure.UseMicrosoftDependencyInjectionJobFactory();
+        });
+
+        services.AddQuartzHostedService();
     }
     public static void AddRedisServiceInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {

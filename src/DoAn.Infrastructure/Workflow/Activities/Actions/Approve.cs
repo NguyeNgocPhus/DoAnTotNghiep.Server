@@ -13,6 +13,7 @@ using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rebus.Pipeline;
@@ -140,20 +141,42 @@ public class Approve : Activity
 
             // get role of next activity
             var roles = nextActivities.Select(x => x.Properties.FirstOrDefault(xx => xx.Name == "Data").Expressions.FirstOrDefault().Value.Trim()).Distinct();
-
-            var value = JsonConvert.DeserializeObject<JObject>(roles.First());
-            var roleId = value?["roleId"].ToObject<Guid>()?? null;
-            if (roleId != null)
+            if (roles.Any())
             {
-                var users = await _userRepository.GetUserHasRole(roleId.Value, context.CancellationToken);
+                var value = JsonConvert.DeserializeObject<JObject>(roles.First());
+                var roleId = value?["roleId"].ToObject<Guid>()?? null;
+                if (roleId != null)
+                {
+                    var users = await _userRepository.GetUserHasRole(roleId.Value, context.CancellationToken);
+
+                    var fields = new Dictionary<string, string>()
+                    {
+                        {"UserName", user.UserName},
+                        {"ImportTemplateName",importTemplate.Name},
+                        {"Code",importHistory.Code}
+                    };
+                    await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Approve, fields, importHistory.Id.ToString());
+                }
+            }
+            else
+            {
+                ///////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD////////////////////////////////
+                var actionLogs = await _actionLogRepository.AsQueryable()
+                    .Where(x => x.ContextId == Guid.Parse(context.ContextId))
+                    .ToListAsync();
+
 
                 var fields = new Dictionary<string, string>()
                 {
-                    {"UserName", user.UserName},
-                    {"ImportTemplateName",importTemplate.Name}
+                    { "UserName", user.UserName },
+                    { "ImportTemplateName", importTemplate.Name },
+                    { "Code", importHistory.Code },
                 };
-                await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Approve, fields, importHistory.Id.ToString());
+                await _notificationService.SendNotificationAsync(actionLogs.Select(x => x.CreatedBy).ToList(),
+                    NotificationType.Approve, fields, importHistory.Id.ToString());
             }
+            
+            
 
             // ////////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD///////////////////////////////////////
             // var actionLogs = await _db.ActionLogs.Where(x => x.ContextId == int.Parse(context.ContextId))

@@ -14,6 +14,7 @@ namespace DoAn.Domain.Entities
         public Guid UserId { get; set; }
         public int Version { get; set; }
         public string Status { get; set; }
+        public string Code { get; set; }
 
         public virtual ImportTemplate ImportTemplate { get; set; } = null!;
         public virtual AppUser User { get; set; }

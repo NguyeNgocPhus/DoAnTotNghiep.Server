@@ -42,6 +42,7 @@ public static class Url
             
             public const string ViewList = "Notifications";
             public const string CountUnread = "Notifications/CountUnread";
+            public const string Update = "Notification";
         }
         public static class ImportHistory
         {

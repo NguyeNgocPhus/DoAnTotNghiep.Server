@@ -12,7 +12,14 @@ namespace DoAn.Shared.Extensions
     public static string ToTrimLower(this string input) => input.Trim().ToLower();
 
     public static string ToTrimUpper(this string input) => input.Trim().ToUpper();
+    private static Random random = new Random();
 
+    public static string RandomString(int length)
+    {
+      const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      return new string(Enumerable.Repeat(chars, length)
+        .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
     public static string Md5Hash(this string input)
     {
       StringBuilder stringBuilder = new StringBuilder();

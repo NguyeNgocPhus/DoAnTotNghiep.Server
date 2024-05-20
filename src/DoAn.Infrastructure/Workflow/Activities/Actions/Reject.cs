@@ -120,6 +120,7 @@ public class Reject : Activity
                 cancellationToken: context.CancellationToken);
             if (workflowDefinition == null)
                 throw new Exception("Approve activity: Workflow Definition not found");
+
             ///////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD////////////////////////////////
             var actionLogs = await _actionLogRepository.AsQueryable()
                 .Where(x => x.ContextId == Guid.Parse(context.ContextId))
@@ -129,7 +130,7 @@ public class Reject : Activity
             var fields = new Dictionary<string, string>()
             {
                 { "UserName", user.UserName },
-                { "ImportTemplateName", importTemplate.Name }
+                { "ImportTemplateName", importTemplate.Name }, { "Code", importHistory.Code }
             };
             await _notificationService.SendNotificationAsync(actionLogs.Select(x => x.CreatedBy).ToList(),
                 NotificationType.Reject, fields, importHistory.Id.ToString());

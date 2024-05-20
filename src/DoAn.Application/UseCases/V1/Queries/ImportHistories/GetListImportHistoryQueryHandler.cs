@@ -38,6 +38,7 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
             {
                 Id = x.Id,
                 Status = x.Status,
+                Code = x.Code,
                 CreatedTime = x.CreatedTime,
                 ImportTemplateId = x.ImportTemplateId,
                 ImportTemplateName = x.ImportTemplate.Name,
@@ -62,6 +63,10 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
         if (!string.IsNullOrEmpty(request.CreatedByName))
         {
             query = query.Where(x => x.CreatedByName.Contains(request.CreatedByName));
+        }
+        if (!string.IsNullOrEmpty(request.Code))
+        {
+            query = query.Where(x => x.Code.Contains(request.Code));
         }
 
         

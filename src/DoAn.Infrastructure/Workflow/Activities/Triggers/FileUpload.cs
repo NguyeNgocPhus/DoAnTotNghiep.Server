@@ -160,7 +160,8 @@ public class FileUpload : Activity
                 var fields = new Dictionary<string, string>()
                 {
                     { "UserName", user.UserName },
-                    { "ImportTemplateName", importTemplate.Name }
+                    { "ImportTemplateName", importTemplate.Name },
+                    { "Code", importHistory.Code }
                 };
                 await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(),
                     NotificationType.Upload, fields, importHistory.Id.ToString());

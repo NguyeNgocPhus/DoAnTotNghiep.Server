@@ -4,6 +4,7 @@ public class ImportHistoryResponse
 {
     public Guid Id { get; set; }
     public bool IsDeleted { get; set; }
+    public string Code { get; set; }
     public DateTime CreatedTime { get; set; }
     public Guid CreatedBy { get; set; }
     public DateTime? UpdatedTime { get; set; }

@@ -10,4 +10,5 @@ public class GetListImportHistoryQuery : PaginationBaseRequest ,IQuery<PagedResu
     public List<Guid> ImportTemplateIds { get; set; } = [];
     public List<string> Status { get; set; } = [];
     public string? CreatedByName { get; set; }
+    public string? Code { get; set; }
 }

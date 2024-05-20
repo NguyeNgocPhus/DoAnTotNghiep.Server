@@ -40,6 +40,7 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddJwtAuthenticationAPI(builder.Configuration);
 builder.Services.AddMediatRApplication();
 builder.Services.AddServicesApplication();
+builder.Services.AddQuartzInfrastructure();
 
 builder.Services.AddServicesInfrastructure();
 builder.Services.AddRedisServiceInfrastructure(builder.Configuration);
