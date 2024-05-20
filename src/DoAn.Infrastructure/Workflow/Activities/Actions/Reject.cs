@@ -1,6 +1,7 @@
 using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Domain.Entities;
+using DoAn.Domain.Entities.Identity;
 using Elsa;
 using Elsa.Activities.Signaling.Models;
 using Elsa.ActivityResults;
@@ -12,6 +13,10 @@ using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
 using Esprima.Ast;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DoAn.Infrastructure.Workflow.Activities.Actions;
 
@@ -30,10 +35,16 @@ public class Reject : Activity
     private readonly IUnitOfWork _unitOfWork;
     private readonly IWorkflowDefinitionStore _workflowDefinition;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IUserRepository _userRepository;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly INotificationService _notificationService;
+    private readonly IRepositoryBase<ImportTemplate, Guid> _importTemplateRepository;
 
     public Reject(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition,
         IRepositoryBase<ActionLogs, Guid> actionLogRepository, IUnitOfWork unitOfWork,
-        ICurrentUserService currentUserService, IRepositoryBase<ImportHistory, Guid> importHistoryRepository)
+        ICurrentUserService currentUserService, IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
+        IUserRepository userRepository, UserManager<AppUser> userManager, INotificationService notificationService,
+        IRepositoryBase<ImportTemplate, Guid> importTemplateRepository)
     {
         _workflowExecutionLog = workflowExecutionLog;
         _workflowDefinition = workflowDefinition;
@@ -41,6 +52,10 @@ public class Reject : Activity
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
         _importHistoryRepository = importHistoryRepository;
+        _userRepository = userRepository;
+        _userManager = userManager;
+        _notificationService = notificationService;
+        _importTemplateRepository = importTemplateRepository;
     }
 
     [ActivityInput(
@@ -90,17 +105,36 @@ public class Reject : Activity
         {
             var triggeredSignal = context.GetInput<Signal>()!;
             var rejectReason = triggeredSignal.Input?.ToString() ?? string.Empty;
-          
+
             var userId = _currentUserService.UserId;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            var importHistory =
+                await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
+            var importTemplate =
+                await _importTemplateRepository.FindSingleAsync(x => x.Id == importHistory.ImportTemplateId);
+
+
             var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
                 context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
                 cancellationToken: context.CancellationToken);
             if (workflowDefinition == null)
                 throw new Exception("Approve activity: Workflow Definition not found");
+            ///////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD////////////////////////////////
+            var actionLogs = await _actionLogRepository.AsQueryable()
+                .Where(x => x.ContextId == Guid.Parse(context.ContextId))
+                .ToListAsync();
 
-         
-            // importHistory.Status = "REJECT";
-            
+
+            var fields = new Dictionary<string, string>()
+            {
+                { "UserName", user.UserName },
+                { "ImportTemplateName", importTemplate.Name }
+            };
+            await _notificationService.SendNotificationAsync(actionLogs.Select(x => x.CreatedBy).ToList(),
+                NotificationType.Reject, fields, importHistory.Id.ToString());
+
+
             var actionLog = new ActionLogs()
             {
                 ActivityId = context.ActivityId,
@@ -117,7 +151,8 @@ public class Reject : Activity
             _actionLogRepository.Add(actionLog);
 
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-            
+
+
             Output = "REJECT";
             return Done();
         }

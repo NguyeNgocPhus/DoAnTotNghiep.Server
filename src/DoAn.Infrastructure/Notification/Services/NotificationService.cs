@@ -22,7 +22,7 @@ public class NotificationService : INotificationService
           _userManager = userManager;
      }
 
-     public async Task<bool> SendNotificationAsync(List<Guid> receiverIds, NotificationType type,Dictionary<string, string> fields, Guid? senderId = null)
+     public async Task<bool> SendNotificationAsync(List<Guid> receiverIds, NotificationType type,Dictionary<string, string> fields, string contextId, Guid? senderId = null)
      {
           try
           {
@@ -38,6 +38,7 @@ public class NotificationService : INotificationService
                {
                     var n = new Domain.Entities.Notification()
                     {
+                         ContextId = contextId,
                          Event = typeNoti.Type,
                          CreatedTime = DateTime.Now,
                          UserId = receiverId,

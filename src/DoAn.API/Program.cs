@@ -4,6 +4,7 @@ using DoAn.API.DependencyInjection.Extensions;
 using DoAn.API.DependencyInjection.Options;
 using DoAn.API.Middlewares;
 using DoAn.Application.DependencyInjection.Extensions;
+using DoAn.Application.Websocket;
 using DoAn.Infrastructure.DependencyInjection.Extensions;
 using DoAn.Persistence.Configurations.Configurations;
 using DoAn.Persistence.DependencyInjection.Extensions;
@@ -53,7 +54,11 @@ builder.Services.ConfigureSqlServerRetryOptionsPersistence(builder.Configuration
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
-
+builder.Services.AddScoped<WebsocketHandler>();
+var webSocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(5)
+};
 builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy => policy
     .AllowAnyHeader()
     .AllowAnyMethod()
@@ -66,6 +71,7 @@ if (app.Environment.IsDevelopment())
 {
 }
 
+app.UseWebSockets(webSocketOptions);
 app.UseCors();
 app.UseStaticFiles();
 app.UseHttpActivities();

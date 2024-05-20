@@ -6,10 +6,11 @@ using DoAn.Domain.Entities;
 using DoAn.Shared.Abstractions.Messages;
 using DoAn.Shared.Abstractions.Shared;
 using DoAn.Shared.Services.V1.Notification;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoAn.Application.UseCases.V1.Queries.Notifications;
 
-public class GetNotificationQueryHandler: IQueryHandler<GetNotificationQuery, PagedResult<NotificationResponse>>
+public class GetNotificationQueryHandler: IQueryHandler<GetNotificationQuery, List<NotificationResponse>>
 {
     private readonly IRepositoryBase<Notification, int> _repository;
     private readonly IMapper _mapper;
@@ -22,15 +23,16 @@ public class GetNotificationQueryHandler: IQueryHandler<GetNotificationQuery, Pa
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<PagedResult<NotificationResponse>>> Handle(GetNotificationQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<NotificationResponse>>> Handle(GetNotificationQuery request, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUserService.UserId;
         var query = _repository.AsQueryable()
             .Where(x => x.UserId == Guid.Parse(currentUserId))
             .ProjectTo<NotificationResponse>(_mapper.ConfigurationProvider)
-            .OrderByDescending(x => x.CreatedTime);
-        var notifications = await PagedResult<NotificationResponse>.CreateAsync(query, request.Page, request.Size);
-
+            .OrderByDescending(x => x.CreatedTime)
+            .Take(request.Page * request.Size);
+        var notifications = await query.ToListAsync(cancellationToken);
+    
         return notifications;
     }
 }

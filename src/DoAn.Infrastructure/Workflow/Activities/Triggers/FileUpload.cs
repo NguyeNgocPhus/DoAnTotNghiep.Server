@@ -30,6 +30,7 @@ public class FileUpload : Activity
     private readonly IRepositoryBase<ActionLogs, Guid> _actionLogsRepository;
     private readonly IRepositoryBase<FileStorage, Guid> _fileRepository;
     private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
+    private readonly IRepositoryBase<ImportTemplate, Guid> _importTemplateRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationService _notificationService;
     private readonly IUserRepository _userRepository;
@@ -37,7 +38,12 @@ public class FileUpload : Activity
     private readonly UserManager<AppUser> _userManager;
 
 
-    public FileUpload(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ActionLogs, Guid> actionLogsRepository, IRepositoryBase<FileStorage, Guid> fileRepository, IUnitOfWork unitOfWork, INotificationService notificationService, IUserRepository userRepository, ICurrentUserService currentUserService, UserManager<AppUser> userManager, IRepositoryBase<ImportHistory, Guid> importHistoryRepository)
+    public FileUpload(IWorkflowDefinitionStore workflowDefinition,
+        IRepositoryBase<ActionLogs, Guid> actionLogsRepository, IRepositoryBase<FileStorage, Guid> fileRepository,
+        IUnitOfWork unitOfWork, INotificationService notificationService, IUserRepository userRepository,
+        ICurrentUserService currentUserService, UserManager<AppUser> userManager,
+        IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
+        IRepositoryBase<ImportTemplate, Guid> importTemplateRepository)
     {
         _workflowDefinition = workflowDefinition;
         _actionLogsRepository = actionLogsRepository;
@@ -48,24 +54,27 @@ public class FileUpload : Activity
         _currentUserService = currentUserService;
         _userManager = userManager;
         _importHistoryRepository = importHistoryRepository;
+        _importTemplateRepository = importTemplateRepository;
     }
+
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
     ]
     public string Position { get; set; } = default!;
+
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
     ]
     public string Data { get; set; } = default!;
+
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
     ]
     public string Description { get; set; } = default!;
-    
-    
+
 
     protected override async ValueTask<IActivityExecutionResult> OnExecuteAsync(ActivityExecutionContext context)
     {
@@ -81,19 +90,22 @@ public class FileUpload : Activity
     {
         try
         {
-
             var userId = _currentUserService.UserId;
             var user = await _userManager.FindByIdAsync(userId);
             var input = context.GetInput<ExecuteFileUpdateDto>();
             var fileDetail = await _fileRepository.FindSingleAsync(x => x.Id == input.FileId);
 
-            // var importHistory = _importHistoryRepository.FindSingleAsync(x => x.FileId == input.FileId);
-            
+            var importHistory = await _importHistoryRepository.FindSingleAsync(x => x.FileId == input.FileId);
+            var importTemplate =
+                await _importTemplateRepository.FindSingleAsync(x => x.Id == importHistory.ImportTemplateId);
+
             // get wf definition by definition id
-            var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(context.WorkflowInstance.DefinitionId, VersionOptions.Latest, cancellationToken: context.CancellationToken);
+            var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
+                context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
+                cancellationToken: context.CancellationToken);
             if (workflowDefinition == null)
                 throw new Exception("Workflow Definition not found");
-            
+
             context.WorkflowExecutionContext.ContextId = input.FileId.ToString();
             var actionLog = new ActionLogs()
             {
@@ -108,11 +120,12 @@ public class FileUpload : Activity
             };
             _actionLogsRepository.Add(actionLog);
             await _unitOfWork.SaveChangesAsync();
-            
+
             ///////////////////// Send notification to next step////////////////////////////////
             // get to next activity
             var nextActivities = new List<ActivityDefinition>();
             GetNextActivities(context.ActivityId);
+
             void GetNextActivities(string activityId)
             {
                 if (nextActivities.Count > 0) return;
@@ -120,32 +133,39 @@ public class FileUpload : Activity
                 {
                     if (connection.SourceActivityId == activityId)
                     {
-                        var activity = workflowDefinition.Activities.FirstOrDefault(x => x.ActivityId == connection.TargetActivityId);
+                        var activity =
+                            workflowDefinition.Activities.FirstOrDefault(x =>
+                                x.ActivityId == connection.TargetActivityId);
                         if (activity.Type == nameof(Approve) || activity.Type == nameof(Reject))
                         {
                             nextActivities.Add(activity);
                         }
+
                         GetNextActivities(connection.TargetActivityId);
                     }
                 }
             }
-            
+
             // get role of next activity
-            var roles = nextActivities.Select(x => x.Properties.FirstOrDefault(xx => xx.Name == "Data").Expressions.FirstOrDefault().Value.Trim()).Distinct();
+            var roles = nextActivities.Select(x =>
+                    x.Properties.FirstOrDefault(xx => xx.Name == "Data").Expressions.FirstOrDefault().Value.Trim())
+                .Distinct();
 
             var value = JsonConvert.DeserializeObject<JObject>(roles.First());
-            var roleId = value?["roleId"].ToObject<Guid>()?? null;
+            var roleId = value?["roleId"].ToObject<Guid>() ?? null;
             if (roleId != null)
             {
                 var users = await _userRepository.GetUserHasRole(roleId.Value, context.CancellationToken);
 
                 var fields = new Dictionary<string, string>()
                 {
-                         {"UserName",user.UserName},
-                         {"ImportTemplateName","Mẫu báo cáo tháng 3"}
+                    { "UserName", user.UserName },
+                    { "ImportTemplateName", importTemplate.Name }
                 };
-                await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Upload, fields);
+                await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(),
+                    NotificationType.Upload, fields, importHistory.Id.ToString());
             }
+
             return Done();
         }
         catch (Exception ex)

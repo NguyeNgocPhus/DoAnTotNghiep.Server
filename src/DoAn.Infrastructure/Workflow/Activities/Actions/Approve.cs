@@ -1,6 +1,7 @@
 using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Domain.Entities;
+using DoAn.Domain.Entities.Identity;
 using Elsa;
 using Elsa.Activities.Signaling.Models;
 using Elsa.ActivityResults;
@@ -11,6 +12,10 @@ using Elsa.Models;
 using Elsa.Persistence;
 using Elsa.Services;
 using Elsa.Services.Models;
+using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Rebus.Pipeline;
 
 namespace DoAn.Infrastructure.Workflow.Activities.Actions;
 
@@ -28,8 +33,15 @@ public class Approve : Activity
     private readonly IUnitOfWork _unitOfWork;
     private readonly IWorkflowDefinitionStore _workflowDefinition;
     private readonly ICurrentUserService _currentUserService;
-
-    public Approve(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition, ICurrentUserService currentUserService, IRepositoryBase<ActionLogs, Guid> actionLogRepository, IUnitOfWork unitOfWork)
+    private readonly IUserRepository _userRepository;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly INotificationService _notificationService;
+    private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
+    private readonly IRepositoryBase<ImportTemplate, Guid> _importTemplateRepository;
+    
+    public Approve(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition,
+        ICurrentUserService currentUserService, IRepositoryBase<ActionLogs, Guid> actionLogRepository,
+        IUnitOfWork unitOfWork, IUserRepository userRepository, INotificationService notificationService, UserManager<AppUser> userManager, IRepositoryBase<ImportHistory, Guid> importHistoryRepository, IRepositoryBase<ImportTemplate, Guid> importTemplateRepository)
     {
         _workflowExecutionLog = workflowExecutionLog;
 
@@ -37,6 +49,11 @@ public class Approve : Activity
         _currentUserService = currentUserService;
         _actionLogRepository = actionLogRepository;
         _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
+        _notificationService = notificationService;
+        _userManager = userManager;
+        _importHistoryRepository = importHistoryRepository;
+        _importTemplateRepository = importTemplateRepository;
     }
 
     [ActivityOutput] public object? Output { get; set; }
@@ -44,19 +61,19 @@ public class Approve : Activity
     [ActivityInput(Hint = "The name of the signal to wait for.",
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid })]
     public string Signal { get; set; } = default!;
-    
+
     [ActivityInput(
         Hint = "Quyền người dùng",
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid }
     )]
     public string Data { get; set; } = default!;
-    
+
     [ActivityInput(
         DefaultSyntax = SyntaxNames.Literal,
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal })
     ]
     public string Position { get; set; } = default!;
-    
+
 
     protected override bool OnCanExecute(ActivityExecutionContext context)
     {
@@ -72,8 +89,14 @@ public class Approve : Activity
     {
         try
         {
-           
             var userId = _currentUserService.UserId;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            var importHistory = await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
+            var importTemplate =
+                await _importTemplateRepository.FindSingleAsync(x => x.Id == importHistory.ImportTemplateId);
+
+            
             var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
                 context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
                 cancellationToken: context.CancellationToken);
@@ -90,12 +113,77 @@ public class Approve : Activity
                 WorkflowDefinitionId = workflowDefinition.Id,
                 ActionReason = string.Empty
             };
+            ///////////////////// GỬI EMAIL ĐẾN CẤP 2////////////////////////////////
+            // get to next activity
+            var nextActivities = new List<ActivityDefinition>();
+            GetNextActivities(context.ActivityId);
+
+            void GetNextActivities(string activityId)
+            {
+                if (nextActivities.Count > 0) return;
+                foreach (var connection in workflowDefinition.Connections)
+                {
+                    if (connection.SourceActivityId == activityId)
+                    {
+                        var activity =
+                            workflowDefinition.Activities.FirstOrDefault(x =>
+                                x.ActivityId == connection.TargetActivityId);
+                        if (activity.Type == nameof(Approve) || activity.Type == nameof(Reject))
+                        {
+                            nextActivities.Add(activity);
+                        }
+
+                        GetNextActivities(connection.TargetActivityId);
+                    }
+                }
+            }
+
+            // get role of next activity
+            var roles = nextActivities.Select(x => x.Properties.FirstOrDefault(xx => xx.Name == "Data").Expressions.FirstOrDefault().Value.Trim()).Distinct();
+
+            var value = JsonConvert.DeserializeObject<JObject>(roles.First());
+            var roleId = value?["roleId"].ToObject<Guid>()?? null;
+            if (roleId != null)
+            {
+                var users = await _userRepository.GetUserHasRole(roleId.Value, context.CancellationToken);
+
+                var fields = new Dictionary<string, string>()
+                {
+                    {"UserName", user.UserName},
+                    {"ImportTemplateName",importTemplate.Name}
+                };
+                await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Approve, fields, importHistory.Id.ToString());
+            }
+
+            // ////////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD///////////////////////////////////////
+            // var actionLogs = await _db.ActionLogs.Where(x => x.ContextId == int.Parse(context.ContextId))
+            //     .Join(_db.Customers, actionLog => actionLog.CreateBy, customer => customer.Id, (actionLog, customer) =>
+            //         new
+            //         {
+            //             Customer = customer,
+            //             ActionLog = actionLog,
+            //         }).OrderBy(x => x.ActionLog.CreateTime).ToListAsync();
+            // // previous activity
+            // var previousActivity =
+            //     workflowDefinition.Connections.FirstOrDefault(x => x.TargetActivityId == context.ActivityId);
+            //
+            // var actionlogs =
+            //     actionLogs.FirstOrDefault(x => x.ActionLog.ActivityId == previousActivity.SourceActivityId);
+            //
+            //
+            // foreach (var actionlog in
+            //          actionLogs.Where(x => x.ActionLog.ActivityId != previousActivity.SourceActivityId))
+            // {
+            //     await _messageFactory.CreateMessageAsync(
+            //         MessageContext.Create("ImportTemplate.Lv1ApprovedToUpload", 0, customer: actionlog.Customer), true,
+            //         model, actionlogs.ActionLog);
+            // }
 
             // add action log
             _actionLogRepository.Add(actionLog);
 
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-            
+
             Output = "APPROVE";
 
             return Done();

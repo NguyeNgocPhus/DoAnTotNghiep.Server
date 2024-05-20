@@ -19,12 +19,9 @@ public class NotificationController: ApiControllerBase
     [HttpGet]
     [Route(Common.Url.ADMIN.Notification.ViewList)]
     [Authorize]
-    public async Task<ActionResult> Get(CancellationToken cancellationToken)
+    public async Task<ActionResult> Get([FromQuery ] GetNotificationQuery query, CancellationToken cancellationToken)
     {
-        var query = new GetNotificationQuery()
-        {
-            Size = 3
-        };
+        query.Size = 3;
         var result =await _mediator.Send(query, cancellationToken);
         if(!result.IsSuccess){}
         return Ok(result);
