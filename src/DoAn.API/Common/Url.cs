@@ -22,6 +22,10 @@ public static class Url
             public const string ViewWorkflowDefinition = "WorkflowDefinition/{id}";
             public const string ViewNode = "WorkflowDefinition/{id}/Node/{type}";
         }
+        public static class Dashboard
+        {
+            public const string View = "Dashboard/View";
+        }
         public static class FileStorage
         {
             public const string Upload = "FileStorage/Upload";

@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Xml.Linq;
 using AutoMapper;
+using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Domain.Entities;
 using DoAn.Shared.Abstractions.Messages;
@@ -18,20 +19,22 @@ public class GetListImportHistoryQueryHandler : IQueryHandler<GetListImportHisto
     private readonly IRepositoryBase<ImportHistory, Guid> _repository;
     private readonly IRepositoryBase<FileStorage, Guid> _fileStorateRepository;
     private readonly IMapper _mapper;
-
-    public GetListImportHistoryQueryHandler(IRepositoryBase<ImportHistory, Guid> repository, IMapper mapper, IRepositoryBase<FileStorage, Guid> fileStorateRepository)
+    private readonly ICurrentUserService _currentUserService;
+    public GetListImportHistoryQueryHandler(IRepositoryBase<ImportHistory, Guid> repository, IMapper mapper, IRepositoryBase<FileStorage, Guid> fileStorateRepository, ICurrentUserService currentUserService)
     {
         _repository = repository;
         _mapper = mapper;
         _fileStorateRepository = fileStorateRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<PagedResult<ImportHistoryResponse>>> Handle(GetListImportHistoryQuery request,
         CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.UserId;
         var query =  _repository
             .FindAll()
-            .Where(x => !x.IsDeleted)
+            .Where(x => !x.IsDeleted && x.CreatedBy == Guid.Parse(userId))
             .Include(x => x.User)
             .Include(x => x.ImportTemplate)
             .Select(x => new ImportHistoryResponse()

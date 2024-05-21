@@ -158,14 +158,12 @@ public class Approve : Activity
                     await _notificationService.SendNotificationAsync(users.Select(x => x.Id).ToList(), NotificationType.Approve, fields, importHistory.Id.ToString());
                 }
             }
-            else
+            ///////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD////////////////////////////////
+            var actionLogs = await _actionLogRepository.AsQueryable()
+                .Where(x => x.ContextId == Guid.Parse(context.ContextId))
+                .ToListAsync();
+            if (actionLogs.Any())
             {
-                ///////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD////////////////////////////////
-                var actionLogs = await _actionLogRepository.AsQueryable()
-                    .Where(x => x.ContextId == Guid.Parse(context.ContextId))
-                    .ToListAsync();
-
-
                 var fields = new Dictionary<string, string>()
                 {
                     { "UserName", user.UserName },
@@ -174,33 +172,9 @@ public class Approve : Activity
                 };
                 await _notificationService.SendNotificationAsync(actionLogs.Select(x => x.CreatedBy).ToList(),
                     NotificationType.Approve, fields, importHistory.Id.ToString());
+
             }
             
-            
-
-            // ////////////////////// GỬI EMAIL ĐẾN NGƯỜI UPLOAD///////////////////////////////////////
-            // var actionLogs = await _db.ActionLogs.Where(x => x.ContextId == int.Parse(context.ContextId))
-            //     .Join(_db.Customers, actionLog => actionLog.CreateBy, customer => customer.Id, (actionLog, customer) =>
-            //         new
-            //         {
-            //             Customer = customer,
-            //             ActionLog = actionLog,
-            //         }).OrderBy(x => x.ActionLog.CreateTime).ToListAsync();
-            // // previous activity
-            // var previousActivity =
-            //     workflowDefinition.Connections.FirstOrDefault(x => x.TargetActivityId == context.ActivityId);
-            //
-            // var actionlogs =
-            //     actionLogs.FirstOrDefault(x => x.ActionLog.ActivityId == previousActivity.SourceActivityId);
-            //
-            //
-            // foreach (var actionlog in
-            //          actionLogs.Where(x => x.ActionLog.ActivityId != previousActivity.SourceActivityId))
-            // {
-            //     await _messageFactory.CreateMessageAsync(
-            //         MessageContext.Create("ImportTemplate.Lv1ApprovedToUpload", 0, customer: actionlog.Customer), true,
-            //         model, actionlogs.ActionLog);
-            // }
 
             // add action log
             _actionLogRepository.Add(actionLog);
