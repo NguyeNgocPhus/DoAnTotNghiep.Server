@@ -85,7 +85,8 @@ public static class ServiceCollectionExtension
                 .AddQuartzTemporalActivities()
                 .AddHttpActivities(elsaSection.GetSection("Server").Bind)
                 .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(connectionString))
-                        .NoCoreActivities()
+                .NoCoreActivities()
+                  
             
             // .AddCustomTenantAccessor<CustomTenantAccessor>()
         );

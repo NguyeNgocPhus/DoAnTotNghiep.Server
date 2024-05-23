@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
@@ -20,31 +21,20 @@ public class Condition : Activity
 
 
     [ActivityOutput] public object? Output { get; set; }
-    //[ActivityInput(Hint = "The condition to evaluate.", UIHint = ActivityInputUIHints.SingleLine, SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Liquid })]
-    //public bool Condition { get; set; }
-
-
+    
     [ActivityInput(
-        UIHint = ActivityInputUIHints.CheckList,
         Hint = "Quyền người dùng",
-        DefaultSyntax = SyntaxNames.Json,
-        SupportedSyntaxes = new[] { SyntaxNames.Json }
+        SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal }
     )]
-    public ISet<string> Roles { get; set; } = new HashSet<string>();
+    public string Data { get; set; } = default!;
 
     protected override IActivityExecutionResult OnExecute(ActivityExecutionContext context)
     {
         try
         {
-            if (Roles.Any())
-            {
-                Output = "APPROVE";
-                return Outcome(True);
-            }
-            else
-            {
-                return Outcome(False);
-            }
+            var d = Data;
+            Output = "APPROVE";
+            return Outcome(True);
         }
         catch (Exception)
         {
