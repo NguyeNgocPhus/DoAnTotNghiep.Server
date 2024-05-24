@@ -1,0 +1,67 @@
+Expression trees:
+
+
+Linq Entity Framework cho phép Expression tree là đầu vào của Linq query expression pattern.. điều này cho phép EF chuyển đổi query bạn viết bằng code C# sang SQL
+cái mà được sử lý bởi db engine
+
+An Expression Tree is a data structure that defines code
+Expression Trees represent code as a structure that you examine, modify, or execute
+
+Variable declaration statement with assignment (var sum = 1 + 2;)
+	Implicit variable type declaration (var sum)
+		Implicit var keyword (var)
+		Variable name declaration (sum)
+	Assignment operator (=)
+	Binary addition expression (1 + 2)
+		Left operand (1)
+		Addition operator (+)
+		Right operand (2)
+
+An expression tree is a data structure that represents some code. It isn't compiled and executable code.
+If you want to execute the .NET code represented by an expression tree, you must convert it into executable IL instructions. 
+Executing an expression tree may return a value, or it may just perform an action such as calling a method.
+
+Only expression trees that represent lambda expressions can be executed.
+
+var param = Expression.Parameter(typeof(User), "x");
+Expression left = null;
+
+var root = Request.Body();
+buildExpression(left, root);
+
+
+
+function Expression buildExpression(QueryBuilder root){
+	var left = null;
+	var condition = root.condition;
+	
+	for(var rule in root.rules.ToList()){
+		if(rule.condition == "or"  || rule.condition == "and"){
+			var right = buildExpression(rule)
+			left = Bind(left, right);
+			continue;
+		}
+		var property = Expression.Property(param, rule.field);
+		var value = rule.value;
+			
+		var containsMethod = MethodContains.MakeGenericMethod(typeof(int));
+		var right =  Expression.Call(containsMethod, property, value);
+		
+		left = Bind(left, right, condition);
+		
+	}
+	return left;
+}
+
+
+function Bind(Expression left, Expression right, string condition){
+	if(left == null){
+		left = right;
+	}else{
+		if(condition == "and") 
+			left = Expression.And(left, right)
+		if(condition == "or") 
+			left = Expression.Or(left, right)
+		
+	}
+}
