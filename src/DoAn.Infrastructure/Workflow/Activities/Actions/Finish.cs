@@ -1,6 +1,7 @@
 ﻿using DoAn.Application.Abstractions;
 using DoAn.Application.Abstractions.Repositories;
 using DoAn.Domain.Entities;
+using Elsa;
 using Elsa.ActivityResults;
 using Elsa.Attributes;
 using Elsa.Design;
@@ -20,18 +21,23 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions
     )]
     public class Finish : Activity
     {
-       
         private readonly IWorkflowDefinitionStore _workflowDefinition;
         private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public Finish(IWorkflowDefinitionStore workflowDefinition, IRepositoryBase<ImportHistory, Guid> importHistoryRepository, IUnitOfWork unitOfWork)
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IRepositoryBase<ActionLogs, Guid> _actionLogRepository;
+        public Finish(IWorkflowDefinitionStore workflowDefinition,
+            IRepositoryBase<ImportHistory, Guid> importHistoryRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IRepositoryBase<ActionLogs, Guid> actionLogRepository)
         {
             _workflowDefinition = workflowDefinition;
             _importHistoryRepository = importHistoryRepository;
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
+            _actionLogRepository = actionLogRepository;
         }
 
-        [ActivityInput(Hint = "The value to set as the workflow's output", SupportedSyntaxes = new[] { SyntaxNames.Literal, SyntaxNames.JavaScript, SyntaxNames.Liquid })]
+        [ActivityInput(Hint = "The value to set as the workflow's output",
+            SupportedSyntaxes = new[] { SyntaxNames.Literal, SyntaxNames.JavaScript, SyntaxNames.Liquid })]
         public object? ActivityOutput { get; set; }
 
         [ActivityOutput] public object? Output { get; set; }
@@ -59,7 +65,9 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions
                 // Evict & remove any scope activities within the scope of the composite activity.
                 var scopes = context.WorkflowInstance.Scopes.Select(x => x).Reverse().ToList();
                 var scopeIds = scopes.Select(x => x.ActivityId).ToList();
-                var containedScopeActivityIds = parentBlueprint == null ? scopeIds : parentBlueprint.Activities.Where(x => scopeIds.Contains(x.Id)).Select(x => x.Id).ToList();
+                var containedScopeActivityIds = parentBlueprint == null
+                    ? scopeIds
+                    : parentBlueprint.Activities.Where(x => scopeIds.Contains(x.Id)).Select(x => x.Id).ToList();
 
                 foreach (var scopeId in containedScopeActivityIds)
                 {
@@ -83,22 +91,40 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions
                 {
                     // Clear all activities scheduled by the parent composite.
                     context.WorkflowExecutionContext.ClearScheduledActivities(parentBlueprint!.Id);
-                }  
+                }
+                var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
+                    context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
+                    cancellationToken: context.CancellationToken);
+                if (workflowDefinition == null)
+                    throw new Exception("Approve activity: Workflow Definition not found");
+                var userId = _currentUserService.UserId;
                 var importHistory =
                     await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
-            
+
                 if (importHistory == null)
                     throw new Exception("Import hisotry is not found");
 
                 importHistory.Status = context.Input switch
                 {
+                    "TRUE" => "APPROVE",
                     "APPROVE" => "APPROVE",
                     "REJECT" => "REJECT",
                     _ => importHistory.Status
                 };
-
+                var actionLog = new ActionLogs()
+                {
+                    ActivityId = context.ActivityId,
+                    ActivityName = nameof(Finish),
+                    CreatedBy = Guid.Parse(userId),
+                    CreatedTime = DateTime.Now,
+                    ContextId = Guid.Parse(context.ContextId),
+                    WorkflowInstanceId = context.WorkflowInstance.Id,
+                    WorkflowDefinitionId = workflowDefinition.Id,
+                    ActionReason = string.Empty
+                };
+                _actionLogRepository.Add(actionLog);
                 await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-                
+
                 return Noop();
             }
             catch (Exception)
