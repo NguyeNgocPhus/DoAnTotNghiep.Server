@@ -47,12 +47,10 @@ function Expression buildExpression(QueryBuilder root){
 		var containsMethod = MethodContains.MakeGenericMethod(typeof(int));
 		var right =  Expression.Call(containsMethod, property, value);
 		
-		left = Bind(left, right, condition);
-		
+		left = Bind(left, right, condition);	
 	}
 	return left;
 }
-
 
 function Bind(Expression left, Expression right, string condition){
 	if(left == null){

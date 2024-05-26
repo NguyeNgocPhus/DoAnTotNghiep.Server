@@ -10,7 +10,7 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddServicesApplication(this IServiceCollection services)
     {
-        // services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddScoped<LinqExpressionService, LinqExpressionService >();
         services.AddScoped<IPasswordGeneratorService, PasswordGeneratorService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
        

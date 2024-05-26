@@ -31,8 +31,4 @@
       <ProjectReference Include="..\DoAn.Shared\DoAn.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
-    </ItemGroup>
-
 </Project>
