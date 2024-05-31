@@ -36,13 +36,25 @@ public class LinqExpressionService
         foreach (var rule in root.Rules)
         {
 
-            if (rule.Condition == "or" || rule.Condition == "and")
+            if (rule.Condition is "or" or "and")
             {
                 var right = ParseTree<T>(rule, parm);
                 left = Bind(left, right, rule.Condition);
                 continue;
             }
-            if (rule.Operator == "in")
+            if (rule.Operator == "contains")
+            {
+                var contains = MethodContains.MakeGenericMethod(typeof(string));
+                var val = rule.Value.ToString();
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.Call(
+                    contains,
+                    property,
+                    Expression.Constant(val));
+                left = Bind(left, right, rule.Condition);
+            }
+            
+            if (rule.Operator == "=")
             {
                 var contains = MethodContains.MakeGenericMethod(typeof(string));
                 var val = rule.Value.ToString();
@@ -54,14 +66,54 @@ public class LinqExpressionService
                 left = Bind(left, right, rule.Condition);
             }
 
-            if (rule.Operator == "equal")
+            if (rule.Operator == "!=")
             {
-                
+                var val = rule.Value.ToString();
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.NotEqual(
+                    property,
+                    Expression.Constant(val));
+                left = Bind(left, right, rule.Condition);
             }
-
-            if (rule.Operator == "not_equal")
+            if (rule.Operator == "<")
             {
-                
+                var val = rule.Value.ToString();
+                var date = DateTime.Parse(val).Date;
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.LessThan(
+                    property,
+                    Expression.Constant(date));
+                left = Bind(left, right, rule.Condition);
+            }
+            if (rule.Operator == ">")
+            {
+                var val = rule.Value.ToString();
+                var date = DateTime.Parse(val).Date;
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.GreaterThan(
+                    property,
+                    Expression.Constant(date));
+                left = Bind(left, right, rule.Condition);
+            }
+            if (rule.Operator == ">=")
+            {
+                var val = rule.Value.ToString();
+                var date = DateTime.Parse(val).Date;
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.GreaterThanOrEqual(
+                    property,
+                    Expression.Constant(date));
+                left = Bind(left, right, rule.Condition);
+            }
+            if (rule.Operator == "<=")
+            {
+                var val = rule.Value.ToString();
+                var date = DateTime.Parse(val).Date;
+                var property = Expression.Property(parm, rule.Field);
+                var right = Expression.LessThanOrEqual(
+                    property,
+                    Expression.Constant(date));
+                left = Bind(left, right, rule.Condition);
             }
         }
 

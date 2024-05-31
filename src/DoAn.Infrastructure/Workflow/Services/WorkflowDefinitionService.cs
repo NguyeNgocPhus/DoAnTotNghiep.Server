@@ -181,7 +181,7 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
                     var activity =
                         workflowDefinition?.Activities.FirstOrDefault(x =>
                             x.ActivityId == connect.SourceActivityId);
-                    if (activity != null && activity.Type != "Branch" && activity.Type != "Condition" &&
+                    if (activity != null && activity.Type != "Branch" &&
                         activity.Type != "Join" && activity.Type != "SendEmail")
                     {
                         if (activity.Type is "Approve" or "Reject")
@@ -202,7 +202,7 @@ public class WorkflowDefinitionService : IWorkflowDefinitionService
             }
         }
 
-        var activities = dictionary.GroupBy(x => x.Key, (key, g) => g.ToList().Select(i => i.Value));
+        var activities = dictionary.OrderBy(x=>x.Key).GroupBy(x => x.Key, (key, g) => g.ToList().Select(i => i.Value));
 
 
         var actionLogs = await _actionLogRepository.GetActionLog(fileId, cancellationToken);

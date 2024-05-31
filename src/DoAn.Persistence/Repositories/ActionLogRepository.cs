@@ -16,7 +16,9 @@ public class ActionLogRepository : RepositoryBase<ActionLogs,Guid> , IActionLogR
     public async Task<List<ActionLogDto>> GetActionLog(Guid contextId, CancellationToken cancellationToken = default)
     {
         var query = from a in _dbContext.ActionLogs
-            join u in _dbContext.AppUses on a.CreatedBy equals u.Id 
+            join u in _dbContext.AppUses on a.CreatedBy equals u.Id into users
+            from user in users.DefaultIfEmpty()
+            
             where a.ContextId == contextId
             select new ActionLogDto()
             {
@@ -28,7 +30,7 @@ public class ActionLogRepository : RepositoryBase<ActionLogs,Guid> , IActionLogR
                 WorkflowInstanceId = a.WorkflowInstanceId,
                 WorkflowDefinitionId = a.WorkflowDefinitionId,
                 ActionReason = a.ActionReason,
-                CreatedByName = u != null ?  u.UserName : "NONE"
+                CreatedByName = user != null ?  user.UserName : "SYSTEM"
                 
             };
         return await query.ToListAsync(cancellationToken);

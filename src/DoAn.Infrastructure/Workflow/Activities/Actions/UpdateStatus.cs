@@ -20,6 +20,7 @@ using Elsa.Services;
 using Elsa.Services.Models;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DoAn.Infrastructure.Workflow.Activities.Actions;
 
@@ -27,12 +28,10 @@ namespace DoAn.Infrastructure.Workflow.Activities.Actions;
     DisplayName = "Điều kiện",
     Category = "Quy trình phê duyệt",
     Description = "Nếu người dùng có quền được chỉ định, dữ liệu nhập sẽ được chấp thuận và không cần phê duyệt",
-    Outcomes = new[] { True, False }
+    Outcomes = new[] { OutcomeNames.Done }
 )]
-public class Condition : Activity
+public class UpdateStatus : Activity
 {
-    public const string True = "True";
-    public const string False = "False";
     private readonly IWorkflowExecutionLogStore _workflowExecutionLog;
     private readonly WorkflowExecutionLog _workflowExecution;
     private readonly LinqExpressionService _linqExpressionService;
@@ -45,10 +44,12 @@ public class Condition : Activity
     private readonly IRepositoryBase<ImportTemplate, Guid> _importTemplateRepository;
     private readonly IRepositoryBase<ImportHistory, Guid> _importHistoryRepository;
     private readonly IUnitOfWork _unitOfWork;
-    
-    public Condition(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition,
+
+    public UpdateStatus(IWorkflowExecutionLogStore workflowExecutionLog, IWorkflowDefinitionStore workflowDefinition,
         ICurrentUserService currentUserService, IRepositoryBase<ActionLogs, Guid> actionLogRepository,
-        IUnitOfWork unitOfWork, IUserRepository userRepository, INotificationService notificationService, UserManager<AppUser> userManager, IRepositoryBase<ImportHistory, Guid> importHistoryRepository, IRepositoryBase<ImportTemplate, Guid> importTemplateRepository, LinqExpressionService linqExpressionService)
+        IUnitOfWork unitOfWork, IUserRepository userRepository, INotificationService notificationService,
+        UserManager<AppUser> userManager, IRepositoryBase<ImportHistory, Guid> importHistoryRepository,
+        IRepositoryBase<ImportTemplate, Guid> importTemplateRepository, LinqExpressionService linqExpressionService)
     {
         _workflowExecutionLog = workflowExecutionLog;
 
@@ -65,7 +66,7 @@ public class Condition : Activity
     }
 
     [ActivityOutput] public object? Output { get; set; }
-    
+
     [ActivityInput(
         Hint = "Quyền người dùng",
         SupportedSyntaxes = new[] { SyntaxNames.JavaScript, SyntaxNames.Literal }
@@ -76,77 +77,41 @@ public class Condition : Activity
     {
         try
         {
-            Data = Data.Replace("combinator", "condition");
-            Data = Data.Replace("=", "in");
-            Data = Data.Replace("!=", "not_equal");
-            
-            
-            var actionLog =
-                await _actionLogRepository.FindSingleAsync(x => x.ContextId == Guid.Parse(context.ContextId));
-            var user = await _userRepository.GetUserByIdAsync(actionLog.CreatedBy);
-
+            var data = JsonConvert.DeserializeObject<JObject>(Data);
+            var @object = data["object"]?.ToString();
+            var status = data["status"]?.ToString();
             var workflowDefinition = await _workflowDefinition.FindByDefinitionIdAsync(
                 context.WorkflowInstance.DefinitionId, VersionOptions.Latest,
                 cancellationToken: context.CancellationToken);
-            var importHistory =
-               await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
-            
-            var filter = JsonConvert.DeserializeObject<QueryRule>(Data);
-
-            var objectFilter = new ObjectFilter()
+            if (@object == "ImportHistory")
             {
-                Roles = user.Roles.ToList(),
-                CreatedTime = importHistory.CreatedTime
-            };
-            // linq dynamic expression
-            var expression = _linqExpressionService.ParseExpressionOf<ObjectFilter>(filter);
-            
-            var query = new List<ObjectFilter>()
-            {
-                objectFilter
-            }.AsQueryable();
-            var checkValid = query.Where(expression).ToList();
+                var importHistory =
+                    await _importHistoryRepository.FindSingleAsync(x => x.FileId == Guid.Parse(context.ContextId));
+                importHistory.Status = status.Trim().ToUpper();
+                await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+            }
             
             var actionLog_n = new ActionLogs()
             {
                 ActivityId = context.ActivityId,
-                ActivityName = nameof(Condition),
+                ActivityName = nameof(UpdateStatus),
                 CreatedBy = Guid.Empty,
                 CreatedTime = DateTime.Now,
                 ContextId = Guid.Parse(context.ContextId),
                 WorkflowInstanceId = context.WorkflowInstance.Id,
                 WorkflowDefinitionId = workflowDefinition.Id,
-                ActionReason = string.Empty
+                ActionReason = string.Empty,
+                Data = ""
             };
             
-          
-            
-            if (checkValid.Any())
-            {
-                Output = "TRUE";
-                actionLog_n.Data = True;
-                _actionLogRepository.Add(actionLog_n);
-
-                await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-                return Outcome(True);
-            }
-            actionLog_n.Data = False;
             _actionLogRepository.Add(actionLog_n);
-            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-            return Outcome(False);
 
+            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+            return Done();
         }
         catch (Exception ex)
         {
             throw;
         }
     }
-
-    class ObjectFilter
-    {
-        public List<string> Roles { get; set; }
-        public DateTime CreatedTime { get; set; }
-    }
-    
-   
 }

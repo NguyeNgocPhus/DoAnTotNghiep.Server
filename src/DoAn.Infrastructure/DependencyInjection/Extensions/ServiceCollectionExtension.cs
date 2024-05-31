@@ -77,6 +77,7 @@ public static class ServiceCollectionExtension
         services.AddElsa(elsa => elsa
                 .AddActivity<FileUpload>()
                 .AddActivity<Approve>()
+                .AddActivity<UpdateStatus>()
                 .AddActivity<Reject>()
                 .AddActivity<Condition>()
                 .AddActivity<Branch>()

@@ -14,5 +14,6 @@ public class ActionLogs: AuditableEntity<Guid>
 
     public string ActivityName { get; set; }
     public string? ActionReason { get; set; }
+    public string? Data { get; set; }
     
 }
